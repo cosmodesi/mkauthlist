@@ -76,6 +76,17 @@ def get_builders(data):
 
     return builders
 
+def get_firsttier(data):
+    """ Get a boolean array of the authors that are first tier. """
+    if 'FirstTier' in data.dtype.names:
+        firsttiers = (np.char.lower(data['FirstTier']) != '')
+    else:
+        msg = "No first tier column found."
+#        raise ValueError(msg)
+
+    return firsttiers
+
+
 def write_contributions(filename,data):
     """ Write a file of author contributions. """
     logging.info("Creating contribution list...")
@@ -117,6 +128,7 @@ journal2class = odict([
     ('aj','aastex6'),
     ('mnras','mnras'),
     ('elsevier','elsevier'),
+    ('jcap','jcap'),
     ('emulateapj','emulateapj'),
     ('arxiv','arxiv'),
     ('aanda', 'aanda')
@@ -125,7 +137,7 @@ journal2class = odict([
 defaults = dict(
     title = "Publication Title",
     abstract=r"This is a sample document created by \texttt{%s v%s}."%(os.path.basename(__file__),__version__),
-    collaboration="DES Collaboration"
+    collaboration="DESI Collaboration"
 )
 
 ### REVTEX ###
@@ -341,9 +353,11 @@ if __name__ == "__main__":
                         choices=sorted(journal2class.keys()),
                         help="journal name or latex document class.")
     parser.add_argument('--orcid', action='store_true',
-                        help="include ORCID information (revtex and aastex).")
+                        help="include ORCID information (elsevier, revtex and aastex).")
     parser.add_argument('-s','--sort', action='store_true',
                         help="alphabetize the author list (you know you want to...).")
+    parser.add_argument('-s1','--sort-firsttier', action='store_true',
+                        help="alphabetize the non first tier list.")
     parser.add_argument('-sb','--sort-builder', action='store_true',
                         help="alphabetize the builder list.")
     parser.add_argument('-sn','--sort-nonbuilder', action='store_true',
@@ -387,6 +401,23 @@ if __name__ == "__main__":
         nonbuilder = nonbuilder[idx]
 
     data = np.hstack([nonbuilder,builder])
+
+
+    if args.sort_firsttier:
+        isfirsttier  = get_firsttier(data)
+        firsttier    = data[isfirsttier]
+        nonfirsttier = data[~isfirsttier]
+
+        idx = np.lexsort((np.char.upper(nonfirsttier['Firstname']),
+                          np.char.upper(nonfirsttier['Lastname'])))
+        nonfirsttier = nonfirsttier[idx]
+
+        idx = np.lexsort((np.char.upper(firsttier['Lastname']),
+                          np.char.upper(firsttier['FirstTier'])))
+        firsttier = firsttier[idx]
+
+        data = np.hstack([firsttier,nonfirsttier])
+
 
     if args.sort:
         idx = np.lexsort((np.char.upper(data['Firstname']),
@@ -601,6 +632,48 @@ if __name__ == "__main__":
             affiliations.append(affiliation)
 
         params = dict(defaults,authors='\n'.join(authors).strip(','),affiliations='\n'.join(affiliations))
+
+
+    ### JCAP ###
+    if cls in ['jcap']:
+        document = elsevier_document
+        authlist = elsevier_authlist
+        affilmark = r'%i,'
+        affiltext = r'\affiliation[%i]{%s}'
+        for i,d in enumerate(data):
+            if d['Affiliation'] == '':
+                logging.warn("Blank affiliation for '%s'"%d['Authorname'])
+            if d['Authorname'] == '':
+                logging.warn("Blank authorname for '%s %s'"%(d['Firstname'],
+                                                             d['Lastname']))
+
+            authorkey = '{%s}'%(d['Authorname'])
+
+            if args.orcid and d['ORCID']:
+                authorkey = authorkey + '\orcidlink{%s}'%d['ORCID'] 
+
+            if (d['Affiliation'] not in affidict.keys()):
+                affidict[d['Affiliation']] = len(affidict.keys())
+            affidx = affidict[d['Affiliation']]
+
+            if authorkey not in authdict.keys():
+                authdict[authorkey] = [affidx]
+            else:
+                authdict[authorkey].append(affidx)
+
+
+        affiliations = []
+        authors=[]
+        for k,v in authdict.items():
+            author = r'\author[%s]{%s,}'%(','.join([str(_v+args.idx) for _v in v]),k)
+            authors.append(author)
+
+        for k,v in affidict.items():
+            affiliation = affiltext%(v+args.idx,k)
+            affiliations.append(affiliation)
+
+        params = dict(defaults,authors='\n'.join(authors).strip(','),affiliations='\n'.join(affiliations))
+
 
     ### ARXIV ###
     if cls in ['arxiv']:
