@@ -129,6 +129,7 @@ journal2class = odict([
     ('mnras','mnras'),
     ('elsevier','elsevier'),
     ('jcap','jcap'),
+    ('jcap.appendix','jcap.appendix'),
     ('emulateapj','emulateapj'),
     ('arxiv','arxiv'),
     ('aanda', 'aanda')
@@ -259,6 +260,16 @@ mnras_document = r"""
 
 \end{document}
 """
+
+### JCAP.appendix ###
+jcapappendix_authlist = r"""
+%(authors)s
+"""
+
+jcapappendix_affilist = r"""
+%(affiliations)s
+"""
+
 
 ### ELSEVIER ###
 elsevier_authlist = r"""
@@ -675,6 +686,50 @@ if __name__ == "__main__":
         params = dict(defaults,authors='\n'.join(authors).strip(','),affiliations='\n'.join(affiliations))
 
 
+    ### JCAP.appendix ###
+    if cls in ['jcap.appendix']:
+        document = elsevier_document
+        authlist = jcapappendix_authlist
+        affilist = jcapappendix_affilist
+        affilmark = r'%i,'
+        affiltext = r'$^{%i}${%s}'
+        for i,d in enumerate(data):
+            if d['Affiliation'] == '':
+                logging.warn("Blank affiliation for '%s'"%d['Authorname'])
+            if d['Authorname'] == '':
+                logging.warn("Blank authorname for '%s %s'"%(d['Firstname'],
+                                                             d['Lastname']))
+
+            authorkey = '{%s}'%(d['Authorname'])
+
+            if args.orcid and d['ORCID']:
+                authorkey = authorkey + '\orcidlink{%s}'%d['ORCID'] 
+
+            if (d['Affiliation'] not in affidict.keys()):
+                affidict[d['Affiliation']] = len(affidict.keys())
+            affidx = affidict[d['Affiliation']]
+
+            if authorkey not in authdict.keys():
+                authdict[authorkey] = [affidx]
+            else:
+                authdict[authorkey].append(affidx)
+
+
+        affiliations = []
+        authors=[]
+        for k,v in authdict.items():
+            author = r'\author[%s]{%s,}'%(','.join([str(_v+args.idx) for _v in v]),k)
+            authors.append(author)
+
+        for k,v in affidict.items():
+            affiliation = affiltext%(v+args.idx,k)
+            affiliations.append(affiliation)
+
+
+        params = dict(authors='\n'.join(authors).strip(','), affiliations='\n\n'.join(affiliations))
+
+
+
     ### ARXIV ###
     if cls in ['arxiv']:
         document = arxiv_document
@@ -705,12 +760,26 @@ if __name__ == "__main__":
 
     output  = "%% Author list file generated with: %s %s \n"%(parser.prog, __version__ )
     output += "%% %s %s \n"%(os.path.basename(sys.argv[0]),' '.join(sys.argv[1:]))
+    output += "%% Orcid numbers may need \\usepackage{orcidlink}.\n"
+    output += "%% Use \\input to call the file\n\n"
+
+    if cls in ['jcap.appendix']: 
+        if args.sort_firsttier: output += "\emailAdd{firsauthor@email}\n\\affiliation{Affiliations are in Appendix \\ref{sec:affiliations}}\n"
+        else: output += "\\author{{DESI Collaboration}:}\n\emailAdd{spokespersons@desi.lbl.gov}\n\\affiliation{Affiliations are in Appendix \\ref{sec:affiliations}}\n"
+
 
     if args.doc:
         params['authlist'] = authlist%params
         output += document%params
     else:
         output += authlist%params
+        if cls in ['jcap.appendix']: 
+            output2  = "%% Author list file generated with: %s %s \n"%(parser.prog, __version__ )
+            output2 += "%% Affiliations file. load \\usepackage{hanging}. Use \\input to call it after \\appendix\n\n\n"
+            output2 += "\\section{Author Affiliations}\n\\label{sec:affiliations}\n\n\\begin{hangparas}{.5cm}{1}\n\n"
+            output2 += affilist%params
+            output2 += "\n\n\\end{hangparas}\n"
+
 
     if args.outfile is None:
         print(output)
@@ -721,6 +790,13 @@ if __name__ == "__main__":
         out = open(outfile,'w')
         out.write(output)
         out.close()
+        if cls in ['jcap.appendix']: 
+#            import os
+#            outfile2 = os.path.splitext(outfile)+".affiliations.tex"
+            outfile2 = outfile[:-len(".tex")] + ".affiliations.tex"
+            out2 = open(outfile2,'w')
+            out2.write(output2)
+            out2.close()
 
     if args.cntrb:
         write_contributions(args.cntrb,data)

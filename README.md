@@ -33,7 +33,6 @@ Usage
 
 In the directory DESItests you may find examples for KP (alphabetical) and first tier papers. For KPs in jcap format and considering ORCID numbers run
 
-
 ```text
 > mkauthlist -f --sort --orcid -j jcap example_alphabetical.csv example_alphabetical.tex
 ```
@@ -43,4 +42,16 @@ For firs tier papers, edit the csv file to add a new column called FirstTier, an
 ```text
 > mkauthlist -f --sort-firsttier --orcid -j jcap example_firsttier.csv example_firsttier.tex
 ```
+
+To send affiliations to an appendix use
+```text
+> mkauthlist -f --sort --orcid -j jcap.appendix example_alphabetical.csv example_alphabetical.tex
+```
+If you want the same for a first author list, change -sort by --sort-firsttier, the email and do not add the DESI collaboration author. 
+
+
+Packages
+-----
+Running with jcap.appendices and orcid needs the commands \usepackage{hanging} and \usepackage{orcidlink} respectively.
+
 
