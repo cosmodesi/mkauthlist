@@ -692,7 +692,7 @@ if __name__ == "__main__":
         authlist = jcapappendix_authlist
         affilist = jcapappendix_affilist
         affilmark = r'%i,'
-        affiltext = r'$^{%i}${%s}'
+        affiltext = r'\noindent \hangindent=.5cm $^{%i}${%s}'
         for i,d in enumerate(data):
             if d['Affiliation'] == '':
                 logging.warn("Blank affiliation for '%s'"%d['Authorname'])
@@ -776,9 +776,10 @@ if __name__ == "__main__":
         if cls in ['jcap.appendix']: 
             output2  = "%% Author list file generated with: %s %s \n"%(parser.prog, __version__ )
             output2 += "%% Affiliations file. load \\usepackage{hanging}. Use \\input to call it after \\appendix\n\n\n"
-            output2 += "\\section{Author Affiliations}\n\\label{sec:affiliations}\n\n\\begin{hangparas}{.5cm}{1}\n\n"
+#            output2 += "\\section{Author Affiliations}\n\\label{sec:affiliations}\n\n\\begin{hangparas}{.5cm}{1}\n\n"
+            output2 += "\\section{Author Affiliations}\n\\label{sec:affiliations}\n\n"
             output2 += affilist%params
-            output2 += "\n\n\\end{hangparas}\n"
+#            output2 += "\n\n\\end{hangparas}\n"
 
 
     if args.outfile is None:
