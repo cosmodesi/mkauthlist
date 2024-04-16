@@ -19,3 +19,6 @@ example_author_list.*
 *.log
 *.spl
 *.cls
+
+# macOS stuff
+.DS_Store
