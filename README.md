@@ -1,5 +1,4 @@
-[![Build](https://github.com/DarkEnergySurvey/mkauthlist/actions/workflows/python-package.yml/badge.svg)](https://github.com/DarkEnergySurvey/mkauthlist/actions/workflows/python-package.yml)
-[![PyPI](https://img.shields.io/pypi/v/mkauthlist.svg)](https://pypi.python.org/pypi/mkauthlist)
+[![Build](https://github.com/cosmodesi/mkauthlist/actions/workflows/python-package.yml/badge.svg)](https://github.com/cosmodesi/mkauthlist/actions/workflows/python-package.yml)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](../../)
 
 mkauthlist
@@ -10,48 +9,63 @@ Make long latex author lists from csv files.
 Installation
 ------------
 
-Get the latest version of DESI's mkauthlist from the DESI Publication Board wiki page.
+Clone or download this github repository: <https://github.com/cosmodesi/mkauthlist>.
 
-Do no use "pip install mkauthlist" because that will use the DES code.
+Do not use `pip install mkauthlist` because that will use the DES code.
 
-After uncompressing it, you may want to set an enviroment to run it using
+You may want to set a virtual enviroment to run it using
 
-```text
-> cd mkauthlist
-> python3 -m venv mkauthlistDESI
-> source mkauthlistDESI/bin/activate
+```shell
+python3 -m venv mkauthlistDESI
+source mkauthlistDESI/bin/activate
 ```
 
 Then you can simply install it by
 
-```text
-> python3 setup.py install
+```shell
+python3 -m pip install .
 ```
+With this, if the code is changed/updated, for changes to take effect you will need to re-install.
+To avoid this, you can use
+```shell
+python3 -m pip install -e .
+```
+
+If you do not worry about conflicts with the DES version, you can install the code with one of the commands above without setting up a virtual environment.
 
 Usage
 -----
 
-In the directory DESItests you may find examples for KP (alphabetical) and first tier papers. For KPs in jcap format and considering ORCID numbers run
+If you download a CSV file from the DESI PubDB you should **remove the empty lines with a CSV editor** before using this script.
 
-```text
-> mkauthlist -f --sort --orcid -j jcap example_alphabetical.csv example_alphabetical.tex
+In the directory `DESItests` you may find examples for KP (alphabetical) and first tier papers.
+
+For KPs in JCAP format and including ORCID numbers run
+
+```shell
+mkauthlist -f --sort --orcid -j jcap example_alphabetical.csv example_alphabetical.tex
 ```
 
-For firs tier papers, edit the csv file to add a new column called FirstTier, and assign natural numbers to the first tier according to their ordering (see example_firsttier.csv). For first tier papers in jcap with orcid numbers run
+For first tier papers, edit the csv file to add a new column called `FirstTier`, and assign natural numbers to the first tier according to their ordering (see example_firsttier.csv).
+For first tier papers in JCAP with ORCID numbers run
 
-```text
-> mkauthlist -f --sort-firsttier --orcid -j jcap example_firsttier.csv example_firsttier.tex
+```shell
+mkauthlist -f --sort-firsttier --orcid -j jcap example_firsttier.csv example_firsttier.tex
 ```
 
 To send affiliations to an appendix use
-```text
-> mkauthlist -f --sort --orcid -j jcap.appendix example_alphabetical.csv example_alphabetical.tex
+```shell
+mkauthlist -f --sort --orcid -j jcap.appendix example_alphabetical.csv example_alphabetical_appendix.tex
 ```
-If you want the same for a first author list, change -sort by --sort-firsttier, the email and do not add the DESI collaboration author. 
+or
+```shell
+mkauthlist -f --sort-firsttier --orcid -j jcap.appendix example_firsttier.csv example_firsttier_appendix.tex
+```
+respectively.
 
 
-Packages
+Additional TeX packages
 -----
-Running with jcap.appendices and orcid needs the commands \usepackage{hanging} and \usepackage{orcidlink} respectively.
+The output with the `--orcid` option requires `\usepackage{orcidlink}` in the TeX preamble.
 
 
