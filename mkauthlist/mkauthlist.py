@@ -775,11 +775,9 @@ if __name__ == "__main__":
         output += authlist%params
         if cls in ['jcap.appendix']: 
             output2  = "%% Author list file generated with: %s %s \n"%(parser.prog, __version__ )
-            output2 += "%% Affiliations file. load \\usepackage{hanging}. Use \\input to call it after \\appendix\n\n\n"
-#            output2 += "\\section{Author Affiliations}\n\\label{sec:affiliations}\n\n\\begin{hangparas}{.5cm}{1}\n\n"
+            output2 += "%% Affiliations file. Use \\input to call it after \\appendix\n\n\n"
             output2 += "\\section{Author Affiliations}\n\\label{sec:affiliations}\n\n"
             output2 += affilist%params
-#            output2 += "\n\n\\end{hangparas}\n"
 
 
     if args.outfile is None:
