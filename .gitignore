@@ -3,6 +3,9 @@ build
 dist
 *.egg-info
 
+# python cache
+__pycache__
+
 # test output
 example_author_list.*
 
