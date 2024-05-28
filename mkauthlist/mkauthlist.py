@@ -661,7 +661,7 @@ if __name__ == "__main__":
             authorkey = '{%s}'%(d['Authorname'])
 
             if args.orcid and d['ORCID']:
-                authorkey = authorkey + '\orcidlink{%s}'%d['ORCID'] 
+                authorkey = authorkey + '\\orcidlink{%s}'%d['ORCID'] 
 
             if (d['Affiliation'] not in affidict.keys()):
                 affidict[d['Affiliation']] = len(affidict.keys())
@@ -703,7 +703,7 @@ if __name__ == "__main__":
             authorkey = '{%s}'%(d['Authorname'])
 
             if args.orcid and d['ORCID']:
-                authorkey = authorkey + '\orcidlink{%s}'%d['ORCID'] 
+                authorkey = authorkey + '\\orcidlink{%s}'%d['ORCID'] 
 
             if (d['Affiliation'] not in affidict.keys()):
                 affidict[d['Affiliation']] = len(affidict.keys())
@@ -764,8 +764,8 @@ if __name__ == "__main__":
     output += "%% Use \\input to call the file\n\n"
 
     if cls in ['jcap.appendix']: 
-        if args.sort_firsttier: output += "\emailAdd{firsauthor@email}\n\\affiliation{Affiliations are in Appendix \\ref{sec:affiliations}}\n"
-        else: output += "\\author{{DESI Collaboration}:}\n\emailAdd{spokespersons@desi.lbl.gov}\n\\affiliation{Affiliations are in Appendix \\ref{sec:affiliations}}\n"
+        if args.sort_firsttier: output += "\\emailAdd{firsauthor@email}\n\\affiliation{Affiliations are in Appendix \\ref{sec:affiliations}}\n"
+        else: output += "\\author{{DESI Collaboration}:}\n\\emailAdd{spokespersons@desi.lbl.gov}\n\\affiliation{Affiliations are in Appendix \\ref{sec:affiliations}}\n"
 
 
     if args.doc:
