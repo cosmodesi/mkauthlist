@@ -63,6 +63,7 @@ mkauthlist -f --sort-firsttier --orcid -j jcap.appendix example_firsttier.csv ex
 ```
 respectively.
 
+To generate the author list for arXiv, use `-j arxiv` (instead of `-j jcap` or `-j jcap.appendix`) with the same options (except `--orcid`).
 
 Additional TeX packages
 -----
