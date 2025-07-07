@@ -591,6 +591,8 @@ if __name__ == "__main__":
                 affmark = affmark.strip(',')
                 # Prefix 'and' on last entry (seems robust)
                 k = 'and ' + k
+            if args.orcid and data[i]['ORCID']:
+                k += '\\orcidlink{%s}'%data[i]['ORCID']
             author = k + affmark
             authors.append(author)
 
