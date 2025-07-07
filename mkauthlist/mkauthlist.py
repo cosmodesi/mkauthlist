@@ -343,9 +343,9 @@ if __name__ == "__main__":
     formatter = argparse.RawDescriptionHelpFormatter
     parser = argparse.ArgumentParser(description=description,
                                      formatter_class=formatter)
-    parser.add_argument('infile', metavar='DES-XXXX-XXXX_author_list.csv',
+    parser.add_argument('infile', metavar='DESI-XXXX-XXXX_author_list.csv',
                         help="input csv file from PubDB")
-    parser.add_argument('outfile', metavar='DES-XXXX-XXXX_author_list.tex',
+    parser.add_argument('outfile', metavar='DESI-XXXX-XXXX_author_list.tex',
                         nargs='?', default=None, help="output latex file (optional).")
     parser.add_argument('-a','--aux', metavar='order.csv',
                         help="auxiliary author ordering file (one name per line).")
