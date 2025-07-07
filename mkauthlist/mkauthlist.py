@@ -350,7 +350,7 @@ if __name__ == "__main__":
     parser.add_argument('-a','--aux', metavar='order.csv',
                         help="auxiliary author ordering file (one name per line).")
     parser.add_argument('-c','--collab','--collaboration',
-                        default='DES Collaboration', help="collaboration name.")
+                        default='DESI Collaboration', help="collaboration name.")
     parser.add_argument('--cntrb','--contributions', nargs='?',
                         const='contributions.tex', help="contribution file.")
     parser.add_argument('-d','--doc', action='store_true',
