@@ -25,11 +25,8 @@ Then you can simply install it by
 ```shell
 python3 -m pip install .
 ```
-With this, if the code is changed/updated, for changes to take effect you will need to re-install.
-To avoid this, you can use
-```shell
-python3 -m pip install -e .
-```
+If the code is changed/updated, you will need to re-install for changes to take effect.
+The editable/developer installation (`pip install -e .`) does not seem to help avoid the re-installation in some cases.
 
 If you do not worry about conflicts with the DES version, you can install the code with one of the commands above without setting up a virtual environment.
 
