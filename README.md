@@ -46,8 +46,8 @@ For KPs in JCAP format and including ORCID numbers run
 mkauthlist -f --sort --orcid -j jcap example_alphabetical.csv example_alphabetical.tex
 ```
 
-For first tier papers, edit the csv file to add a new column called `FirstTier`, and assign natural numbers to the first tier according to their ordering (see example_firsttier.csv).
-For first tier papers in JCAP with ORCID numbers run
+For first-tier author papers, edit the CSV file to add a new column called `FirstTier`, and assign natural numbers to the first-tier authors according to their ordering (see `example_firsttier.csv` in `DESItests`).
+For first-tier papers in JCAP with ORCID numbers run
 
 ```shell
 mkauthlist -f --sort-firsttier --orcid -j jcap example_firsttier.csv example_firsttier.tex

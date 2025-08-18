@@ -78,11 +78,13 @@ def get_builders(data):
 def get_firsttier(data):
     """ Get a boolean array of the authors that are first tier. """
     if 'FirstTier' in data.dtype.names:
-        firsttiers = (np.char.lower(data['FirstTier']) != '')
+        firsttiers = np.char.isdigit(data['FirstTier']) # basically strings that can be converted to numbers; empty strings can not and are excluded
+        if np.any(np.char.str_len(data['FirstTier'][~firsttiers]) > 0):
+            logging.warning("Found strings in the FirstTier column that do not represent natural numbers, they will be ignored (affected authors will NOT be considered first-tier).")
+        return firsttiers
     else:
-        logging.warning("No first tier column found.")
-
-    return firsttiers
+        logging.warning("First-tier column (FirstTier) not found. Proceeding without first-tier authors.")
+        return np.zeros(len(data), dtype=bool) # no first-tier authors
 
 
 def write_contributions(filename,data):
@@ -366,7 +368,7 @@ if __name__ == "__main__":
     parser.add_argument('-s','--sort', action='store_true',
                         help="alphabetize the author list (you know you want to...).")
     parser.add_argument('-s1','--sort-firsttier', action='store_true',
-                        help="alphabetize the non first tier list.")
+                        help="alphabetize the non first tier list. first-tier authors and their order are determined by natural numbers in the FirstTier column that should be added.")
     parser.add_argument('-sb','--sort-builder', action='store_true',
                         help="alphabetize the builder list.")
     parser.add_argument('-sn','--sort-nonbuilder', action='store_true',
@@ -421,8 +423,9 @@ if __name__ == "__main__":
                           np.char.upper(nonfirsttier['Lastname'])))
         nonfirsttier = nonfirsttier[idx]
 
-        idx = np.lexsort((np.char.upper(firsttier['Lastname']),
-                          np.char.upper(firsttier['FirstTier'])))
+        idx = np.lexsort((np.char.upper(firsttier['Firstname']),
+                          np.char.upper(firsttier['Lastname']),
+                          np.asarray(firsttier['FirstTier'], dtype=int)))
         firsttier = firsttier[idx]
 
         data = np.hstack([firsttier,nonfirsttier])
