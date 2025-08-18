@@ -34,7 +34,6 @@ except:
 import os,sys
 import csv
 from collections import OrderedDict as odict
-import copy
 import re
 import logging
 
