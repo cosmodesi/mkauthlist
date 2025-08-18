@@ -78,9 +78,9 @@ def get_builders(data):
 def get_firsttier(data):
     """ Get a boolean array of the authors that are first tier. """
     if 'FirstTier' in data.dtype.names:
-        firsttiers = np.char.isdigit(data['FirstTier']) # basically strings that can be converted to numbers; empty strings can not and are excluded
+        firsttiers = np.char.isdigit(data['FirstTier']) # basically strings that can be converted to natural numbers (non-negative integers); empty strings can not and are excluded
         if np.any(np.char.str_len(data['FirstTier'][~firsttiers]) > 0):
-            logging.warning("Found strings in the FirstTier column that do not represent natural numbers, they will be ignored (affected authors will NOT be considered first-tier).")
+            logging.warning("Found strings in the FirstTier column that are not empty and do not represent natural numbers (non-negative integers), they will be ignored (affected authors will NOT be considered first-tier).")
         return firsttiers
     else:
         logging.warning("First-tier column (FirstTier) not found. Proceeding without first-tier authors.")
