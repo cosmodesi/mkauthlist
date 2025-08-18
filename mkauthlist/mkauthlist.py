@@ -60,7 +60,7 @@ def check_umlaut(lines):
         if umlaut.search(line) is None or quote.search(line) is None: continue
         if umlaut.search(line).start() > quote.search(line).start():
             msg =  "Found unescaped umlaut: " + line.strip()
-            logging.warn(msg)
+            logging.warning(msg)
     return lines
 
 def get_builders(data):
@@ -80,8 +80,7 @@ def get_firsttier(data):
     if 'FirstTier' in data.dtype.names:
         firsttiers = (np.char.lower(data['FirstTier']) != '')
     else:
-        msg = "No first tier column found."
-#        raise ValueError(msg)
+        logging.warning("No first tier column found.")
 
     return firsttiers
 
@@ -96,14 +95,14 @@ def write_contributions(filename,data):
     cntrbdict = odict()
     for i,d in enumerate(data):
         if cntrbdict.get(d['Authorname'],d['Contribution']) != d['Contribution']:
-            logging.warn("Non-unique contribution for '%(Authorname)s'"%d)
+            logging.warning("Non-unique contribution for '%(Authorname)s'"%d)
 
         cntrbdict[d['Authorname']]=d['Contribution']
 
     output = r'Author contributions are listed below. \\'+'\n'
     for i,(name,cntrb) in enumerate(cntrbdict.items()):
         if cntrb == '':
-            logging.warn("Blank contribution for '%s'"%name)
+            logging.warning("Blank contribution for '%s'"%name)
 
         output += r'%s: %s \\'%(name,cntrb) + '\n'
 
@@ -441,7 +440,7 @@ if __name__ == "__main__":
 
     # Hack for umlauts in affiliations...
     for k, v in HACK.items():
-        logging.warn("Hacking '%s' ..."%k)
+        logging.warning("Hacking '%s' ..."%k)
         select = (np.char.count(data['Affiliation'],k) > 0)
         data['Affiliation'][select] = v
 
@@ -480,7 +479,7 @@ if __name__ == "__main__":
             if np.sum(match) < 1:
                 msg = "Auxiliary name not found: %s"%(lastname)
                 if firstname: msg += ', %s'%firstname
-                logging.warn(msg)
+                logging.warning(msg)
                 continue
 
             # Check unique firstname
@@ -509,10 +508,10 @@ if __name__ == "__main__":
 
         for i,d in enumerate(data):
             if d['Affiliation'] == '':
-                logging.warn("Blank affiliation for '%s'"%d['Authorname'])
+                logging.warning("Blank affiliation for '%s'"%d['Authorname'])
             if d['Authorname'] == '':
-                logging.warn("Blank authorname for '%s %s'"%(d['Firstname'],
-                                                             d['Lastname']))
+                logging.warning("Blank authorname for '%s %s'"%(d['Firstname'],
+                                                                d['Lastname']))
 
             authorkey = '{%s}'%(d['Authorname'])
 
@@ -567,10 +566,10 @@ if __name__ == "__main__":
         for iauth, dat_auth in enumerate(data):
             print(dat_auth['Authorname'])
             if dat_auth['Affiliation'] == '':
-                logging.warn("Blank affiliation for '%s'"%dat_auth['Authorname'])
+                logging.warning("Blank affiliation for '%s'"%dat_auth['Authorname'])
             if dat_auth['Authorname'] == '':
-                logging.warn("Blank authorname for '%s %s'"%(dat_auth['Firstname'],
-                                                             dat_auth['Lastname']))
+                logging.warning("Blank authorname for '%s %s'"%(dat_auth['Firstname'],
+                                                                dat_auth['Lastname']))
 
             if (dat_auth['Affiliation'] not in affidict.keys()):
                 affidict[dat_auth['Affiliation']] = len(affidict.keys())
@@ -619,10 +618,10 @@ if __name__ == "__main__":
         affiltext = r'\address[%i]{%s}'
         for i,d in enumerate(data):
             if d['Affiliation'] == '':
-                logging.warn("Blank affiliation for '%s'"%d['Authorname'])
+                logging.warning("Blank affiliation for '%s'"%d['Authorname'])
             if d['Authorname'] == '':
-                logging.warn("Blank authorname for '%s %s'"%(d['Firstname'],
-                                                             d['Lastname']))
+                logging.warning("Blank authorname for '%s %s'"%(d['Firstname'],
+                                                                d['Lastname']))
 
             if (d['Affiliation'] not in affidict.keys()):
                 affidict[d['Affiliation']] = len(affidict.keys())
@@ -654,10 +653,10 @@ if __name__ == "__main__":
         affiltext = r'\affiliation[%i]{%s}'
         for i,d in enumerate(data):
             if d['Affiliation'] == '':
-                logging.warn("Blank affiliation for '%s'"%d['Authorname'])
+                logging.warning("Blank affiliation for '%s'"%d['Authorname'])
             if d['Authorname'] == '':
-                logging.warn("Blank authorname for '%s %s'"%(d['Firstname'],
-                                                             d['Lastname']))
+                logging.warning("Blank authorname for '%s %s'"%(d['Firstname'],
+                                                                d['Lastname']))
 
             authorkey = '{%s}'%(d['Authorname'])
 
@@ -696,10 +695,10 @@ if __name__ == "__main__":
         affiltext = r'\noindent \hangindent=.5cm $^{%i}${%s}'
         for i,d in enumerate(data):
             if d['Affiliation'] == '':
-                logging.warn("Blank affiliation for '%s'"%d['Authorname'])
+                logging.warning("Blank affiliation for '%s'"%d['Authorname'])
             if d['Authorname'] == '':
-                logging.warn("Blank authorname for '%s %s'"%(d['Firstname'],
-                                                             d['Lastname']))
+                logging.warning("Blank authorname for '%s %s'"%(d['Firstname'],
+                                                                d['Lastname']))
 
             authorkey = '{%s}'%(d['Authorname'])
 
@@ -741,8 +740,8 @@ if __name__ == "__main__":
 
         for i,d in enumerate(data):
             if d['Authorname'] == '':
-                logging.warn("Blank authorname for '%s %s'"%(d['Firstname'],
-                                                             d['Lastname']))
+                logging.warning("Blank authorname for '%s %s'"%(d['Firstname'],
+                                                                d['Lastname']))
             if (d['Affiliation'] not in affidict.keys()):
                 affidict[d['Affiliation']] = len(affidict.keys())
             affidx = affidict[d['Affiliation']]
@@ -786,7 +785,7 @@ if __name__ == "__main__":
     else:
         outfile = args.outfile
         if os.path.exists(outfile) and not args.force:
-            logging.warn("Found %s; skipping..."%outfile)
+            logging.warning("Found %s; skipping..."%outfile)
         out = open(outfile,'w')
         out.write(output)
         out.close()
