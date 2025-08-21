@@ -364,7 +364,7 @@ if __name__ == "__main__":
                         choices=sorted(journal2class.keys()),
                         help="journal name or latex document class.")
     parser.add_argument('--orcid', action='store_true',
-                        help="include ORCID information (elsevier, revtex and aastex).")
+                        help="include ORCID information (elsevier, revtex, aastex, mnras, emulateapj and aanda).")
     parser.add_argument('-s','--sort', action='store_true',
                         help="alphabetize the author list (you know you want to...).")
     parser.add_argument('-s1','--sort-firsttier', action='store_true',
@@ -567,7 +567,9 @@ if __name__ == "__main__":
             raise Exception(msg)
 
         for iauth, dat_auth in enumerate(data):
-            print(dat_auth['Authorname'])
+            authorkey = dat_auth['Authorname']
+            if args.orcid and dat_auth['ORCID']: authorkey += r'\orcidlink{%s}'%dat_auth['ORCID']
+            print(authorkey)
             if dat_auth['Affiliation'] == '':
                 logging.warning("Blank affiliation for '%s'"%dat_auth['Authorname'])
             if dat_auth['Authorname'] == '':
@@ -578,10 +580,10 @@ if __name__ == "__main__":
                 affidict[dat_auth['Affiliation']] = len(affidict.keys())
             affidx = affidict[dat_auth['Affiliation']]
 
-            if dat_auth['Authorname'] not in authdict.keys():
-                authdict[dat_auth['Authorname']] = [affidx]
+            if authorkey not in authdict.keys():
+                authdict[authorkey] = [affidx]
             else:
-                authdict[dat_auth['Authorname']].append(affidx)
+                authdict[authorkey].append(affidx)
 
         affiliations = []
         authors=[]
@@ -592,8 +594,6 @@ if __name__ == "__main__":
                 affmark = affmark.strip(',')
                 # Prefix 'and' on last entry (seems robust)
                 k = 'and ' + k
-            if args.orcid and data[i]['ORCID']:
-                k += '\\orcidlink{%s}'%data[i]['ORCID']
             author = k + affmark
             authors.append(author)
 
