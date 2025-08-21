@@ -767,7 +767,7 @@ if __name__ == "__main__":
     output += "%% Use \\input to call the file\n\n"
 
     if cls in ['jcap.appendix']: 
-        if args.sort_firsttier: output += "\\emailAdd{firsauthor@email}\n\\affiliation{Affiliations are in Appendix \\ref{sec:affiliations}}\n"
+        if args.sort_firsttier: output += "\\emailAdd{firstauthor@email}\n\\affiliation{Affiliations are in Appendix \\ref{sec:affiliations}}\n"
         else: output += "\\author{{DESI Collaboration}:}\n\\emailAdd{spokespersons@desi.lbl.gov}\n\\affiliation{Affiliations are in Appendix \\ref{sec:affiliations}}\n"
 
 
