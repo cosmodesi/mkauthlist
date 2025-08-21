@@ -772,8 +772,10 @@ if __name__ == "__main__":
 
     output  = "%% Author list file generated with: %s %s \n"%(parser.prog, __version__ )
     output += "%% %s %s \n"%(os.path.basename(sys.argv[0]),' '.join(sys.argv[1:]))
-    output += "%% Orcid numbers may need \\usepackage{orcidlink}.\n"
-    output += "%% Use \\input to call the file\n\n"
+    if cls not in ['arxiv']: # non-TeX "journal(s)" for which the following lines are not relevant
+        if args.orcid: output += "%% Orcid numbers may need \\usepackage{orcidlink}.\n"
+        output += f"%% Use \\input{args.outfile if args.outfile is not None else '...'} to call the file\n"
+    output += "\n"
 
     if cls in ['jcap.appendix']: 
         if args.sort_firsttier: output += "\\emailAdd{firstauthor@email}\n\\affiliation{Affiliations are in Appendix \\ref{sec:affiliations}}\n"
