@@ -50,6 +50,8 @@ For first-tier papers in JCAP with ORCID numbers run
 mkauthlist -f --sort-firsttier --orcid -j jcap example_firsttier.csv example_firsttier.tex
 ```
 
+You may also want to exclude the collaboration name by adding the `-nc`, `--nocollab` or `--nocollaboration` flag.
+
 To send affiliations to an appendix use
 ```shell
 mkauthlist -f --sort --orcid -j jcap.appendix example_alphabetical.csv example_alphabetical_appendix.tex
@@ -69,6 +71,7 @@ or
 mkauthlist -f --sort-firsttier -j arxiv example_firsttier.csv example_firsttier.txt
 ```
 respectively.
+In the latter case, you may also want to exclude the collaboration name by adding the `-nc`, `--nocollab` or `--nocollaboration` flag.
 
 Additional TeX packages
 -----

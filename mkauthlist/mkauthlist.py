@@ -363,6 +363,8 @@ if __name__ == "__main__":
     parser.add_argument('-j','--journal', default='apj',
                         choices=sorted(journal2class.keys()),
                         help="journal name or latex document class.")
+    parser.add_argument('-nc','--nocollab','--nocollaboration', action='store_true',
+                        help="exclude the collaboration name (may be desirable in first-tier papers).")
     parser.add_argument('--orcid', action='store_true',
                         help="include ORCID information (elsevier, revtex, aastex, mnras, emulateapj and aanda).")
     parser.add_argument('-s','--sort', action='store_true',
@@ -385,6 +387,7 @@ if __name__ == "__main__":
     else: level = logging.WARNING
     logging.basicConfig(format="%% %(levelname)s: %(message)s", level=level)
 
+    if args.nocollab: args.collab = ""
     defaults['collaboration'] = args.collab
 
     readlines = open(args.infile).readlines()
@@ -738,6 +741,8 @@ if __name__ == "__main__":
         document = arxiv_document
         if args.sort:
             authlist = '%(collaboration)s: ' + arxiv_authlist
+        elif args.nocollab: # do not add the collaboration
+            authlist = arxiv_authlist
         else:
             authlist = arxiv_authlist + ' (%(collaboration)s)'
 
@@ -760,6 +765,10 @@ if __name__ == "__main__":
             authors.append(author)
 
         params = dict(defaults,authors=', '.join(authors).strip(','),affiliations='')
+    
+    if args.nocollab: # exclude the collaboration. beware of the following hacks when adding/editing journal templates
+        authlist = authlist.replace("[%(collaboration)s]", "") # remove the optional collaboration argument (from the MNRAS template)
+        authlist = "".join([line for line in authlist.splitlines(keepends=True) if "collaboration" not in line]) # now, should be safe to remove any lines mentioning the collaboration
 
     output  = "%% Author list file generated with: %s %s \n"%(parser.prog, __version__ )
     output += "%% %s %s \n"%(os.path.basename(sys.argv[0]),' '.join(sys.argv[1:]))
