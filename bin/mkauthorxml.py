@@ -44,16 +44,29 @@ def generate_collaboration_xml(latex_file, output_filename, publication_referenc
     ET.register_namespace('foaf', "http://xmlns.com/foaf/0.1/")
     ET.register_namespace('cal', "http://inspirehep.net/info/HepNames/tools/authors_xml/")
 
-    affiliation_pattern = re.compile(r'\\affiliation\{(.*?)\}')
-    
     lines = content.splitlines()
     authors_data = []
     
     unique_affiliations = OrderedDict()
+    # Find all unique affiliations
     for line in lines:
-        affil_match = affiliation_pattern.search(line)
-        if affil_match:
-            affiliation_text = affil_match.group(1).strip()
+        stripped_line = line.strip()
+        if stripped_line.startswith(r'\affiliation{'):
+            start_index = line.find(r'\affiliation{') + len(r'\affiliation{')
+            brace_level = 1
+            end_index = -1
+            for j in range(start_index, len(line)):
+                if line[j] == '{':
+                    brace_level += 1
+                elif line[j] == '}':
+                    brace_level -= 1
+                    if brace_level == 0:
+                        end_index = j
+                        break
+            
+            if end_index == -1: continue # Skip malformed line
+            
+            affiliation_text = line[start_index:end_index].strip()
             if affiliation_text not in unique_affiliations:
                 unique_affiliations[affiliation_text] = f"aff{len(unique_affiliations) + 1}"
 
@@ -62,7 +75,7 @@ def generate_collaboration_xml(latex_file, output_filename, publication_referenc
     for i, line in enumerate(lines):
         stripped_line = line.strip()
         
-        # Parse author name
+        # Parse author name (this logic is already correct)
         if stripped_line.startswith(r'\author{'):
             start_index = line.find(r'\author{') + len(r'\author{')
             brace_level = 1
@@ -92,11 +105,26 @@ def generate_collaboration_xml(latex_file, output_filename, publication_referenc
             authors_data.append(author_info)
             current_author_group.append(author_info)
 
+        # --- START OF AFFILIATION PARSING FIX (Pass 2) ---
         elif stripped_line.startswith(r'\affiliation{'):
-            affil_match = affiliation_pattern.search(line)
-            if not affil_match: continue
+            # Use the same robust brace-matching parser to extract the affiliation
+            start_index = line.find(r'\affiliation{') + len(r'\affiliation{')
+            brace_level = 1
+            end_index = -1
+            for j in range(start_index, len(line)):
+                if line[j] == '{':
+                    brace_level += 1
+                elif line[j] == '}':
+                    brace_level -= 1
+                    if brace_level == 0:
+                        end_index = j
+                        break
+            
+            if end_index == -1: continue # Skip malformed line
 
-            affiliation_text = affil_match.group(1).strip()
+            affiliation_text = line[start_index:end_index].strip()
+            # --- END OF AFFILIATION PARSING FIX (Pass 2) ---
+
             aff_id = unique_affiliations.get(affiliation_text)
             if aff_id:
                 for author in current_author_group:
@@ -107,12 +135,14 @@ def generate_collaboration_xml(latex_file, output_filename, publication_referenc
             for j in range(i + 1, len(lines)):
                 future_line = lines[j].strip()
                 if not future_line: continue
-                if affiliation_pattern.search(future_line):
+                # We need a simple check here, not the full parser
+                if future_line.startswith(r'\affiliation{'):
                     next_line_is_affil = True
                 break
             
             if not next_line_is_affil:
                  current_author_group = []
+
 
     # --- Build the XML structure ---
     ns = {'foaf': 'http://xmlns.com/foaf/0.1/', 'cal': 'http://inspirehep.net/info/HepNames/tools/authors_xml/'}
