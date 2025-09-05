@@ -798,6 +798,7 @@ if __name__ == "__main__":
             if dat_auth['Authorname'] == '':
                 logging.warning("Blank authorname for '%s %s'"%(dat_auth['Firstname'],
                                                                 dat_auth['Lastname']))
+            authors_data[authorkey]['familyName'] = dat_auth['Lastname']
             affikey = converter.latex_to_text(clean_latex_to_text(dat_auth['Affiliation']))
             # converter.latex_to_text converts the LaTeX accented characters (probably unwanted in XML) to Unicode
             # clean_latex_to_text should safely remove "~" designating non-breakable spaces, which we probably do not want in XML
@@ -826,6 +827,7 @@ if __name__ == "__main__":
         authors_xml = ET.SubElement(root, f"{{{ns['cal']}}}authors")
         for name, data in authors_data.items():
             person = ET.SubElement(authors_xml, f"{{{ns['foaf']}}}Person")
+            ET.SubElement(person, f"{{{ns['foaf']}}}familyName").text = data['familyName']
             ET.SubElement(person, f"{{{ns['cal']}}}authorNamePaper").text = name
             affs = ET.SubElement(person, f"{{{ns['cal']}}}authorAffiliations")
             for aff_id in data['affiliations']:
