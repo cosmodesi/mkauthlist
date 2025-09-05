@@ -22,6 +22,7 @@ setup(
     packages = ['mkauthlist'],
     install_requires=[
         'numpy >= 1.6.1',
+        'pylatexenc'
     ],
     platforms='any',
     keywords='latex des',

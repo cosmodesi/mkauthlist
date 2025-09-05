@@ -39,6 +39,11 @@ import logging
 
 import numpy as np
 
+from datetime import date
+import xml.etree.ElementTree as ET
+from xml.dom import minidom
+from pylatexenc.latex2text import LatexNodes2Text
+
 #MUNICH HACK (shouldn't be necessary any more)
 HACK = odict([
     #('Ludwig-Maximilians-Universit',r'Department of Physics, Ludwig-Maximilians-Universit\"at, Scheinerstr.\ 1, 81679 M\"unchen, Germany')
@@ -62,6 +67,10 @@ def check_umlaut(lines):
             msg =  "Found unescaped umlaut: " + line.strip()
             logging.warning(msg)
     return lines
+
+def clean_latex_to_text(s):
+    "Removal of LaTeX commands suitable for arXiv. Leaves accent commands"
+    return re.sub(r'(?<!\\)~',' ', s).replace(r'\ ', ' ').replace('{', '').replace('}', '')
 
 def get_builders(data):
     """ Get a boolean array of the authors that are builders. """
@@ -132,7 +141,9 @@ journal2class = odict([
     ('jcap.appendix','jcap.appendix'),
     ('emulateapj','emulateapj'),
     ('arxiv','arxiv'),
-    ('aanda', 'aanda')
+    ('aanda', 'aanda'),
+    ('author.xml', 'author.xml'),
+    ('inspire', 'author.xml')
 ])
 
 defaults = dict(
@@ -351,6 +362,8 @@ if __name__ == "__main__":
                         help="auxiliary author ordering file (one name per line).")
     parser.add_argument('-c','--collab','--collaboration',
                         default='DESI Collaboration', help="collaboration name.")
+    parser.add_argument('-cid', '--collab-id', default='c1',
+                        help="The ID for the collaboration (e.g., c1) for INSPIRE author.xml.")
     parser.add_argument('--cntrb','--contributions', nargs='?',
                         const='contributions.tex', help="contribution file.")
     parser.add_argument('-d','--doc', action='store_true',
@@ -367,6 +380,8 @@ if __name__ == "__main__":
                         help="exclude the collaboration name (may be desirable in first-tier papers).")
     parser.add_argument('--orcid', action='store_true',
                         help="include ORCID information (elsevier, revtex, aastex, mnras, emulateapj and aanda).")
+    parser.add_argument('-pr', '--pubref', metavar='https://arxiv.org/abs/YYMM.XXXXX',
+                        help="The publication reference URL (e.g., arXiv link). Needed for INSPIRE author.xml.")
     parser.add_argument('-s','--sort', action='store_true',
                         help="alphabetize the author list (you know you want to...).")
     parser.add_argument('-s1','--sort-firsttier', action='store_true',
@@ -761,10 +776,82 @@ if __name__ == "__main__":
 
         authors=[]
         for k,v in authdict.items():
-            author = re.sub(r'(?<!\\)~',' ',k).replace(r'\ ',' ').replace('{','').replace('}','')
-            authors.append(author)
+            authors.append(clean_latex_to_text(k))
 
         params = dict(defaults,authors=', '.join(authors).strip(','),affiliations='')
+    
+    # INSPIRE author.xml
+    # Based on mkauthorxml.py by Paul Martini
+    # The format is explained at https://github.com/inspirehep/author.xml
+    if cls in ['author.xml']:
+        authors_data = {}
+        affidict = {}
+        converter = LatexNodes2Text()
+        for iauth, dat_auth in enumerate(data):
+            authorkey = converter.latex_to_text(clean_latex_to_text(dat_auth['Authorname']))
+            # converter.latex_to_text converts the LaTeX accented characters (probably unwanted in XML) to Unicode
+            # clean_latex_to_text should safely remove "~" designating non-breakable spaces, which we probably do not want in XML
+            if authorkey not in authors_data.keys(): authors_data[authorkey] = {'affiliations': []}
+            if dat_auth['ORCID']: authors_data[authorkey]['orcid'] = dat_auth['ORCID']
+            if dat_auth['Affiliation'] == '':
+                logging.warning("Blank affiliation for '%s'"%dat_auth['Authorname'])
+            if dat_auth['Authorname'] == '':
+                logging.warning("Blank authorname for '%s %s'"%(dat_auth['Firstname'],
+                                                                dat_auth['Lastname']))
+            affikey = converter.latex_to_text(clean_latex_to_text(dat_auth['Affiliation']))
+            # converter.latex_to_text converts the LaTeX accented characters (probably unwanted in XML) to Unicode
+            # clean_latex_to_text should safely remove "~" designating non-breakable spaces, which we probably do not want in XML
+            if (affikey not in affidict.keys()):
+                affidict[affikey] = "aff%d"%len(affidict.keys())
+            affidx = affidict[affikey]
+            authors_data[authorkey]['affiliations'].append(affidx)
+
+        ET.register_namespace('foaf', "http://xmlns.com/foaf/0.1/")
+        ET.register_namespace('cal', "http://inspirehep.net/info/HepNames/tools/authors_xml/")
+
+        # --- Build the XML structure ---
+        ns = {'foaf': 'http://xmlns.com/foaf/0.1/', 'cal': 'http://inspirehep.net/info/HepNames/tools/authors_xml/'}
+        root = ET.Element('collaborationauthorlist')
+
+        ET.SubElement(root, f"{{{ns['cal']}}}creationDate").text = date.today().isoformat()
+        ET.SubElement(root, f"{{{ns['cal']}}}publicationReference").text = args.pubref
+        if not args.nocollab:
+            collaborations = ET.SubElement(root, f"{{{ns['cal']}}}collaborations")
+            collaboration = ET.SubElement(collaborations, f"{{{ns['cal']}}}collaboration", {'id': args.collab_id})
+            ET.SubElement(collaboration, f"{{{ns['foaf']}}}name").text = defaults['collaboration']
+        organizations = ET.SubElement(root, f"{{{ns['cal']}}}organizations")
+        for text, org_id in affidict.items():
+            org = ET.SubElement(organizations, f"{{{ns['foaf']}}}Organization", {'id': org_id})
+            ET.SubElement(org, f"{{{ns['foaf']}}}name").text = text
+        authors_xml = ET.SubElement(root, f"{{{ns['cal']}}}authors")
+        for name, data in authors_data.items():
+            person = ET.SubElement(authors_xml, f"{{{ns['foaf']}}}Person")
+            ET.SubElement(person, f"{{{ns['cal']}}}authorNamePaper").text = name
+            affs = ET.SubElement(person, f"{{{ns['cal']}}}authorAffiliations")
+            for aff_id in data['affiliations']:
+                ET.SubElement(affs, f"{{{ns['cal']}}}authorAffiliation", {'organizationid': aff_id, 'connection': ''})
+            if 'orcid' in data.keys():
+                ids = ET.SubElement(person, f"{{{ns['cal']}}}authorids")
+                ET.SubElement(ids, f"{{{ns['cal']}}}authorid", {'source': 'ORCID'}).text = data['orcid']
+
+        xml_header = '<?xml version="1.0" encoding="UTF-8"?>\n'
+        doctype_header = '<!DOCTYPE collaborationauthorlist SYSTEM "author.dtd">\n'
+
+        rough_string = ET.tostring(root, 'utf-8')
+        reparsed = minidom.parseString(rough_string)
+        # Return the XML split into lines, and replace the header
+        string_list = [xml_header, doctype_header] + reparsed.toprettyxml(indent="  ").splitlines(True)[1:]
+
+        if args.outfile is None:
+            print("".join(string_list), end="")
+        else:
+            outfile = args.outfile
+            if os.path.exists(outfile) and not args.force:
+                logging.warning("Found %s; skipping..."%outfile)
+            with open(outfile, 'w', encoding='utf-8') as f:
+                f.writelines(string_list)
+
+        sys.exit(0) # the templates are not set for the next formattijng
     
     if args.nocollab: # exclude the collaboration. beware of the following hacks when adding/editing journal templates
         authlist = authlist.replace("[%(collaboration)s]", "") # remove the optional collaboration argument (from the MNRAS template)
