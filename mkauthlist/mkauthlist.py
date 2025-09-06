@@ -802,8 +802,7 @@ if __name__ == "__main__":
             affikey = converter.latex_to_text(clean_latex_to_text(dat_auth['Affiliation']))
             # converter.latex_to_text converts the LaTeX accented characters (probably unwanted in XML) to Unicode
             # clean_latex_to_text should safely remove "~" designating non-breakable spaces, which we probably do not want in XML
-            if (affikey not in affidict.keys()):
-                affidict[affikey] = "aff%d"%len(affidict.keys())
+            if affikey not in affidict.keys(): affidict[affikey] = "a%d"%(len(affidict.keys())+1) # IDs start from a1
             affidx = affidict[affikey]
             authors_data[authorkey]['affiliations'].append(affidx)
 
@@ -831,7 +830,7 @@ if __name__ == "__main__":
             ET.SubElement(person, f"{{{ns['cal']}}}authorNamePaper").text = name
             affs = ET.SubElement(person, f"{{{ns['cal']}}}authorAffiliations")
             for aff_id in data['affiliations']:
-                ET.SubElement(affs, f"{{{ns['cal']}}}authorAffiliation", {'organizationid': aff_id, 'connection': ''})
+                ET.SubElement(affs, f"{{{ns['cal']}}}authorAffiliation", {'organizationid': aff_id})
             if 'orcid' in data.keys():
                 ids = ET.SubElement(person, f"{{{ns['cal']}}}authorids")
                 ET.SubElement(ids, f"{{{ns['cal']}}}authorid", {'source': 'ORCID'}).text = data['orcid']
@@ -839,7 +838,7 @@ if __name__ == "__main__":
         xml_header = '<?xml version="1.0" encoding="UTF-8"?>\n'
         doctype_header = '<!DOCTYPE collaborationauthorlist SYSTEM "author.dtd">\n'
 
-        rough_string = ET.tostring(root, 'utf-8')
+        rough_string = ET.tostring(root, encoding='unicode')
         reparsed = minidom.parseString(rough_string)
         # Return the XML split into lines, and replace the header
         string_list = [xml_header, doctype_header] + reparsed.toprettyxml(indent="  ").splitlines(True)[1:]
