@@ -45,11 +45,11 @@ jobs:
     - name: Install pynose # nose becomes deprecated for Python 3.12
       run: |
         source activate env
-        pip install pynose
+        python -m pip install pynose
     - name: Install package
       run: |
         source activate env
-        python setup.py install
+        python -m pip install .
     - name: Lint with flake8
       if: ${{ false }}
       run: |
