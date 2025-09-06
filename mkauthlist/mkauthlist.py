@@ -379,7 +379,7 @@ if __name__ == "__main__":
     parser.add_argument('-nc','--nocollab','--nocollaboration', action='store_true',
                         help="exclude the collaboration name (may be desirable in first-tier papers).")
     parser.add_argument('--orcid', action='store_true',
-                        help="include ORCID information (elsevier, revtex, aastex, mnras, emulateapj and aanda).")
+                        help="include ORCID information (elsevier, revtex, aastex, mnras, emulateapj, aanda, inspire or author.xml).")
     parser.add_argument('-pr', '--pubref', metavar='https://arxiv.org/abs/YYMM.XXXXX',
                         help="The publication reference URL (e.g., arXiv link). Needed for INSPIRE author.xml.")
     parser.add_argument('-s','--sort', action='store_true',
@@ -792,7 +792,7 @@ if __name__ == "__main__":
             # converter.latex_to_text converts the LaTeX accented characters (probably unwanted in XML) to Unicode
             # clean_latex_to_text should safely remove "~" designating non-breakable spaces, which we probably do not want in XML
             if authorkey not in authors_data.keys(): authors_data[authorkey] = {'affiliations': []}
-            if dat_auth['ORCID']: authors_data[authorkey]['orcid'] = dat_auth['ORCID']
+            if args.orcid and dat_auth['ORCID']: authors_data[authorkey]['orcid'] = dat_auth['ORCID']
             if dat_auth['Affiliation'] == '':
                 logging.warning("Blank affiliation for '%s'"%dat_auth['Authorname'])
             if dat_auth['Authorname'] == '':
