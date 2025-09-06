@@ -81,6 +81,13 @@ mkauthlist -f --sort-firsttier -j arxiv example_firsttier.csv example_firsttier.
 respectively.
 In the latter case, you may also want to exclude the collaboration name by adding the `-nc`, `--nocollab` or `--nocollaboration` flag.
 
+To generate the `author.xml` for INSPIRE (<https://github.com/inspirehep/author.xml>) and/or Phys.Rev. journals, use `-j author.xml` (or `-j inspire`) and add the publication reference (e.g., the arXiv URL) via `-pr` or `--pubref`, e.g.
+```shell
+mkauthlist -f --sort -j author.xml --orcid -pr https://arxiv.org/abs/YYMM.XXXXX example_alphabetical.csv example_alphabetical.xml
+```
+It is worth including the ORCID information by using the `--orcid` option.
+**NB**: Excluding the collaboration name will produce an invalid XML file.
+
 Additional TeX packages
 -----
 The output with the `--orcid` option requires `\usepackage{orcidlink}` in the TeX preamble.
