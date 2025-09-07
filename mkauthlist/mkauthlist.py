@@ -104,14 +104,14 @@ def write_contributions(filename,data):
         raise Exception()
 
     cntrbdict = odict()
-    for i,d in enumerate(data):
+    for d in data:
         if cntrbdict.get(d['Authorname'],d['Contribution']) != d['Contribution']:
             logging.warning("Non-unique contribution for '%(Authorname)s'"%d)
 
         cntrbdict[d['Authorname']]=d['Contribution']
 
     output = r'Author contributions are listed below. \\'+'\n'
-    for i,(name,cntrb) in enumerate(cntrbdict.items()):
+    for name, cntrb in cntrbdict.items():
         if cntrb == '':
             logging.warning("Blank contribution for '%s'"%name)
 
@@ -527,7 +527,7 @@ if __name__ == "__main__":
             msg = "Unrecognized latex class: %s"%cls
             raise Exception(msg)
 
-        for i,d in enumerate(data):
+        for d in data:
             if d['Affiliation'] == '':
                 logging.warning("Blank affiliation for '%s'"%d['Authorname'])
             if d['Authorname'] == '':
@@ -584,7 +584,7 @@ if __name__ == "__main__":
             msg = "Unrecognized latex class: %s"%cls
             raise Exception(msg)
 
-        for iauth, dat_auth in enumerate(data):
+        for dat_auth in data:
             authorkey = dat_auth['Authorname']
             if args.orcid and dat_auth['ORCID']: authorkey += r'\orcidlink{%s}'%dat_auth['ORCID']
             print(authorkey)
@@ -637,7 +637,7 @@ if __name__ == "__main__":
         authlist = elsevier_authlist
         affilmark = r'%i,'
         affiltext = r'\address[%i]{%s}'
-        for i,d in enumerate(data):
+        for d in data:
             if d['Affiliation'] == '':
                 logging.warning("Blank affiliation for '%s'"%d['Authorname'])
             if d['Authorname'] == '':
@@ -672,7 +672,7 @@ if __name__ == "__main__":
         authlist = elsevier_authlist
         affilmark = r'%i,'
         affiltext = r'\affiliation[%i]{%s}'
-        for i,d in enumerate(data):
+        for d in data:
             if d['Affiliation'] == '':
                 logging.warning("Blank affiliation for '%s'"%d['Authorname'])
             if d['Authorname'] == '':
@@ -714,7 +714,7 @@ if __name__ == "__main__":
         affilist = jcapappendix_affilist
         affilmark = r'%i,'
         affiltext = r'\noindent \hangindent=.5cm $^{%i}${%s}'
-        for i,d in enumerate(data):
+        for d in data:
             if d['Affiliation'] == '':
                 logging.warning("Blank affiliation for '%s'"%d['Authorname'])
             if d['Authorname'] == '':
@@ -761,7 +761,7 @@ if __name__ == "__main__":
         else:
             authlist = arxiv_authlist + ' (%(collaboration)s)'
 
-        for i,d in enumerate(data):
+        for d in data:
             if d['Authorname'] == '':
                 logging.warning("Blank authorname for '%s %s'"%(d['Firstname'],
                                                                 d['Lastname']))
@@ -787,7 +787,7 @@ if __name__ == "__main__":
         authors_data = {}
         affidict = {}
         converter = LatexNodes2Text()
-        for iauth, dat_auth in enumerate(data):
+        for dat_auth in data:
             authorkey = converter.latex_to_text(clean_latex_to_text(dat_auth['Authorname']))
             # converter.latex_to_text converts the LaTeX accented characters (probably unwanted in XML) to Unicode
             # clean_latex_to_text should safely remove "~" designating non-breakable spaces, which we probably do not want in XML
