@@ -814,8 +814,12 @@ if __name__ == "__main__":
         root = ET.Element('collaborationauthorlist')
 
         ET.SubElement(root, f"{{{ns['cal']}}}creationDate").text = date.today().isoformat()
+        if not args.pubref:
+            logging.warning("Publication reference must be included for valid author.xml. Use `-pr ...` or `--pubref ...` to provide, e.g., an arXiv number, collaboration internal publication identifier, or DOI.")
         ET.SubElement(root, f"{{{ns['cal']}}}publicationReference").text = args.pubref
-        if not args.nocollab:
+        if args.nocollab:
+            logging.warning("Collaboration information must be included for valid author.xml.")
+        else:
             collaborations = ET.SubElement(root, f"{{{ns['cal']}}}collaborations")
             collaboration = ET.SubElement(collaborations, f"{{{ns['cal']}}}collaboration", {'id': args.collab_id})
             ET.SubElement(collaboration, f"{{{ns['foaf']}}}name").text = defaults['collaboration']
