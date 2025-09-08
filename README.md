@@ -88,6 +88,12 @@ mkauthlist -f --sort -j author.xml --orcid -pr https://arxiv.org/abs/YYMM.XXXXX 
 It is worth including the ORCID information by using the `--orcid` option.
 **NB**: Excluding the collaboration name will produce an invalid XML file.
 
+Another option is to use the `mkauthorxml.py` script to create the author.xml file that APS journals may request. Here is the syntax:
+```shell
+python mkauthorxml.py paper.tex -o paper.xml 
+```
+Note there are also options for adding the collaboration name and an arxiv link. Use `-h` to get information about other command line parameters. 
+
 Additional TeX packages
 -----
 The output with the `--orcid` option requires `\usepackage{orcidlink}` in the TeX preamble.
