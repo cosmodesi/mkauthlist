@@ -17,6 +17,21 @@ from xml.dom import minidom
 from collections import OrderedDict
 import argparse
 
+def parse_name(full_name):
+    """
+    Splits a full name into given name and family name.
+    Assumes the last word is the family name.
+    """
+    parts = full_name.strip().split()
+    if len(parts) > 1:
+        given_name = " ".join(parts[:-1])
+        family_name = parts[-1]
+    else:
+        given_name = ""
+        family_name = full_name
+    return given_name, family_name
+
+
 def pretty_print_xml(elem):
     """
     Return a nicely formatted XML string for the Element.
@@ -33,7 +48,6 @@ def generate_collaboration_xml(latex_file, output_filename, publication_referenc
     Parses a revtex LaTeX file to generate INSPIRE-HEP compliant 
     collaboration XML.
     """
-
     try:
         with open(latex_file, 'r', encoding='utf-8') as f:
             content = f.read()
@@ -43,12 +57,11 @@ def generate_collaboration_xml(latex_file, output_filename, publication_referenc
 
     ET.register_namespace('foaf', "http://xmlns.com/foaf/0.1/")
     ET.register_namespace('cal', "http://inspirehep.net/info/HepNames/tools/authors_xml/")
-
+    
     lines = content.splitlines()
     authors_data = []
     
     unique_affiliations = OrderedDict()
-    # Find all unique affiliations
     for line in lines:
         stripped_line = line.strip()
         if stripped_line.startswith(r'\affiliation{'):
@@ -63,19 +76,14 @@ def generate_collaboration_xml(latex_file, output_filename, publication_referenc
                     if brace_level == 0:
                         end_index = j
                         break
-            
-            if end_index == -1: continue # Skip malformed line
-            
+            if end_index == -1: continue
             affiliation_text = line[start_index:end_index].strip()
             if affiliation_text not in unique_affiliations:
                 unique_affiliations[affiliation_text] = f"aff{len(unique_affiliations) + 1}"
 
-    # Second pass: associate authors with their affiliations
     current_author_group = []
     for i, line in enumerate(lines):
         stripped_line = line.strip()
-        
-        # Parse author name (this logic is already correct)
         if stripped_line.startswith(r'\author{'):
             start_index = line.find(r'\author{') + len(r'\author{')
             brace_level = 1
@@ -88,26 +96,18 @@ def generate_collaboration_xml(latex_file, output_filename, publication_referenc
                     if brace_level == 0:
                         end_index = j
                         break
-            
-            if end_index == -1: continue # Skip malformed line
-
+            if end_index == -1: continue
             full_content = line[start_index:end_index]
-            
             name = full_content.strip()
             orcid = None
             orcid_match = re.search(r'\\orcidlink\{(.*?)\}', full_content)
-            
             if orcid_match:
                 orcid = orcid_match.group(1)
                 name = full_content[:orcid_match.start()].strip()
-                
             author_info = {'name': name, 'orcid': orcid, 'affiliations': []}
             authors_data.append(author_info)
             current_author_group.append(author_info)
-
-        # --- START OF AFFILIATION PARSING FIX (Pass 2) ---
         elif stripped_line.startswith(r'\affiliation{'):
-            # Use the same robust brace-matching parser to extract the affiliation
             start_index = line.find(r'\affiliation{') + len(r'\affiliation{')
             brace_level = 1
             end_index = -1
@@ -119,30 +119,22 @@ def generate_collaboration_xml(latex_file, output_filename, publication_referenc
                     if brace_level == 0:
                         end_index = j
                         break
-            
-            if end_index == -1: continue # Skip malformed line
-
+            if end_index == -1: continue
             affiliation_text = line[start_index:end_index].strip()
-            # --- END OF AFFILIATION PARSING FIX (Pass 2) ---
-
             aff_id = unique_affiliations.get(affiliation_text)
             if aff_id:
                 for author in current_author_group:
                     if aff_id not in author['affiliations']:
                         author['affiliations'].append(aff_id)
-            
             next_line_is_affil = False
             for j in range(i + 1, len(lines)):
                 future_line = lines[j].strip()
                 if not future_line: continue
-                # We need a simple check here, not the full parser
                 if future_line.startswith(r'\affiliation{'):
                     next_line_is_affil = True
                 break
-            
             if not next_line_is_affil:
                  current_author_group = []
-
 
     # --- Build the XML structure ---
     ns = {'foaf': 'http://xmlns.com/foaf/0.1/', 'cal': 'http://inspirehep.net/info/HepNames/tools/authors_xml/'}
@@ -158,15 +150,36 @@ def generate_collaboration_xml(latex_file, output_filename, publication_referenc
         org = ET.SubElement(organizations, f"{{{ns['foaf']}}}Organization", {'id': org_id})
         ET.SubElement(org, f"{{{ns['foaf']}}}name").text = text
     authors_xml = ET.SubElement(root, f"{{{ns['cal']}}}authors")
+    
+    # --- START OF XML GENERATION FIX ---
+    # Reordered this loop to match the DTD specification
     for data in authors_data:
         person = ET.SubElement(authors_xml, f"{{{ns['foaf']}}}Person")
+        
+        # Parse full name into given and family names
+        given_name, family_name = parse_name(data['name'])
+
+        # Create elements in the order specified by author.dtd
+        if given_name:
+            ET.SubElement(person, f"{{{ns['foaf']}}}givenName").text = given_name
+        
+        # foaf:familyName is a required element
+        ET.SubElement(person, f"{{{ns['foaf']}}}familyName").text = family_name
+        
+        # cal:authorNamePaper is a required element
         ET.SubElement(person, f"{{{ns['cal']}}}authorNamePaper").text = data['name']
-        affs = ET.SubElement(person, f"{{{ns['cal']}}}authorAffiliations")
-        for aff_id in data['affiliations']:
-            ET.SubElement(affs, f"{{{ns['cal']}}}authorAffiliation", {'organizationid': aff_id, 'connection': ''})
+        
+        # Add affiliations if they exist
+        if data['affiliations']:
+            affs = ET.SubElement(person, f"{{{ns['cal']}}}authorAffiliations")
+            for aff_id in data['affiliations']:
+                ET.SubElement(affs, f"{{{ns['cal']}}}authorAffiliation", {'organizationid': aff_id, 'connection': ''})
+        
+        # Add ORCID if it exists
         if data['orcid']:
             ids = ET.SubElement(person, f"{{{ns['cal']}}}authorids")
             ET.SubElement(ids, f"{{{ns['cal']}}}authorid", {'source': 'ORCID'}).text = data['orcid']
+    # --- END OF XML GENERATION FIX ---
 
     xml_header = '<?xml version="1.0" encoding="UTF-8"?>\n'
     doctype_header = '<!DOCTYPE collaborationauthorlist SYSTEM "author.dtd">\n\n'
@@ -178,6 +191,7 @@ def generate_collaboration_xml(latex_file, output_filename, publication_referenc
         f.writelines(xml_content_lines)
 
     print(f"Successfully created '{output_filename}'!")
+
 
 
 def main():
