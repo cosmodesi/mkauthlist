@@ -665,7 +665,7 @@ if __name__ == "__main__":
     if cls in ['elsevier']:
         document = elsevier_document
         authlist = elsevier_authlist
-        affiltext = r'\address[%i]{%s}'
+        affiltext = r'\address[%s]{%s}'
         for d in data:
             if d['Affiliation'] == '':
                 logging.warning("Blank affiliation for '%s'"%d['Authorname'])
