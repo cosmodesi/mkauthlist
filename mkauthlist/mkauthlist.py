@@ -72,6 +72,36 @@ def clean_latex_to_text(s):
     "Removal of LaTeX commands suitable for arXiv. Leaves accent commands"
     return re.sub(r'(?<!\\)~',' ', s).replace(r'\ ', ' ').replace('{', '').replace('}', '')
 
+def letter_numeric(N: int):
+    """
+    Some journals (as far as we know, JCAP) like to make affiliation marks in lowercase letters and not numbers.
+    Numbers may be more readable, but using the same convention should help to prevent and catch mistakes.
+    For consistency with numeric markers in other journals, we begin counting from 1, so clearly 1 -> a and so on until 26 -> z.
+    As evidenced in DESI 2024 JCAP batch proofs/published versions, 27 -> aa, 28 -> ab and so on, presumably until 702 -> zz.
+    We presume the pattern continues indefinitely (with e.g. 703 -> aaa), although two letters will probably be sufficient in practice.
+    """
+    if N <= 0: logging.warning("A letter-numeric representation for a non-positive integer %d will be empty."%N)
+    # these letter representations are not exactly like a simple N_LETTER-based positional system with digits mapped to letters
+    # in a positional system without leading zeros, the first digit can not be 0 but here it can evidently be 'a'
+    # just shifting by 1 does not work because in multi-letter representations 0 still needs to be reflected in positions except the first
+    FIRST_LETTER_CODE = ord('a'); N_LETTERS = 26 # English/ASCII lowercase letters
+    s = "" # the result string to be built in the reverse order
+    n = N - 1 # seems easier to shift from one-based to zero-based counting
+    while n >= 0: # loop over digits in the reverse order - starting from the trailing/smallest
+        d = n % N_LETTERS # current digit, 0 to N_LETTERS - 1
+        s = chr(FIRST_LETTER_CODE + d) + s # prepend the letter representation of the current digit (ASCII letters have sequential codes) to the string
+        n = n // N_LETTERS - 1 # move on to the next digit, subtracting the N_LETTERS combinations that can be expressed without adding another digit
+        # probably a better explanation of this loop:
+        # there is a hidden variable n_digits, starting from 1 at the first iteration
+        # numbers strictly less than N_LETTERS**n_digits can be represented with n_digits digits (with leading zeros, i.e. 'a's)
+        # numbers greater or equal than that need more digits, but with each additional digit counting can restart from zero with leading zeros ('a's) without the risk of confusion with shorter representations, and in fact it should according to the rules JCAP seems to follow
+        # so at each step we need to subtract N_LETTERS**n_digits from n. when it becomes negative, we found the necessary number of digits
+        # just before it becomes negative, we need to build a 26-base positional representation of n (with all those things subtracted) of length n_digits with leading zeros (converting digits to letters)
+        # but subtracting N_LETTERS**k does not change the last k digits in the N_LETTER-base positional system!
+        # as a result, we can find the number of digits and iteratively compute the digits (in the reverse order) at the same time by using the integer division and subtraction together
+        # since we are dividing by N_LETTERS each time, N_LETTERS**n_digits turns into 1, thus we do not need the n_digits variable explicitly
+    return s
+
 def get_builders(data):
     """ Get a boolean array of the authors that are builders. """
     if 'AuthorType' in data.dtype.names:
@@ -672,12 +702,12 @@ if __name__ == "__main__":
         affilmark = r'%i,'
         if cls == 'jcap':
             authlist = elsevier_authlist
-            affiltext = r'\affiliation[%i]{%s}'
+            affiltext = r'\affiliation[%s]{%s}'
             affilsep = '\n'
         elif cls == 'jcap.appendix':
             authlist = jcapappendix_authlist
             affilist = jcapappendix_affilist
-            affiltext = r'\noindent \hangindent=.5cm $^{%i}${%s}'
+            affiltext = r'\noindent \hangindent=.5cm $^{%s}${%s}'
             affilsep = '\n\n'
         else:
             msg = "Unrecognized latex class: %s"%cls
@@ -708,11 +738,11 @@ if __name__ == "__main__":
         affiliations = []
         authors=[]
         for k,v in authdict.items():
-            author = r'\author[%s]{%s,}'%(','.join([str(_v+args.idx) for _v in v]),k)
+            author = r'\author[%s]{%s,}' % (','.join([letter_numeric(_v+args.idx) for _v in v]), k)
             authors.append(author)
 
         for k,v in affidict.items():
-            affiliation = affiltext%(v+args.idx,k)
+            affiliation = affiltext % (letter_numeric(v+args.idx), k)
             affiliations.append(affiliation)
 
         params = dict(defaults, authors='\n'.join(authors).strip(','), affiliations=affilsep.join(affiliations))
