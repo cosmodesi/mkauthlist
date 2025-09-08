@@ -798,7 +798,7 @@ if __name__ == "__main__":
             affikey = converter.latex_to_text(clean_latex_to_text(dat_auth['Affiliation']))
             # converter.latex_to_text converts the LaTeX accented characters (probably unwanted in XML) to Unicode
             # clean_latex_to_text should safely remove "~" designating non-breakable spaces, which we probably do not want in XML
-            if affikey not in affidict.keys(): affidict[affikey] = "a%d"%(len(affidict.keys())+1) # IDs start from a1
+            if affikey not in affidict.keys(): affidict[affikey] = "a%d" % (len(affidict.keys()) + args.idx) # IDs are assigned as a%d right away, by default starting from a1
             affidx = affidict[affikey]
             authors_data[authorkey]['affiliations'].append(affidx)
 
