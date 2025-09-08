@@ -625,7 +625,7 @@ if __name__ == "__main__":
                                                                 dat_auth['Lastname']))
 
             if (dat_auth['Affiliation'] not in affidict.keys()):
-                affidict[dat_auth['Affiliation']] = len(affidict.keys())
+                affidict[dat_auth['Affiliation']] = str(len(affidict.keys()) + args.idx) # format as string right away for all future usage
             affidx = affidict[dat_auth['Affiliation']]
 
             if authorkey not in authdict.keys():
@@ -636,7 +636,7 @@ if __name__ == "__main__":
         affiliations = []
         authors=[]
         for i, (k,v) in enumerate(authdict.items()):
-            affmark = affilmark%(','.join([str(_v+args.idx) for _v in v]))
+            affmark = affilmark % (','.join(v))
             if i+1==len(authdict):
                 # Strip trailing comma from last entry (note MNRAS comma position)
                 affmark = affmark.strip(',')
@@ -646,17 +646,17 @@ if __name__ == "__main__":
             authors.append(author)
 
         if cls == 'aanda':
-            for k, v in affidict.items():
+            for i, (k, v) in enumerate(affidict.items()):
                 institution = k.rstrip(' ').lstrip(' ')
                 if institution == '':
                     pass #continue
                 affiliation = affiltext%(institution)
-                if v == 0:
+                if i == 0:
                     affiliation = affiliation.lstrip('\\and ')
                 affiliations.append(affiliation)
         else:
             for k,v in affidict.items():
-                affiliation = affiltext%(v+args.idx,k)
+                affiliation = affiltext % (v, k)
                 affiliations.append(affiliation)
 
         params = dict(defaults,authors='\n'.join(authors),affiliations='\n'.join(affiliations))
@@ -674,7 +674,7 @@ if __name__ == "__main__":
                                                                 d['Lastname']))
 
             if (d['Affiliation'] not in affidict.keys()):
-                affidict[d['Affiliation']] = len(affidict.keys())
+                affidict[d['Affiliation']] = str(len(affidict.keys()) + args.idx) # format as string right away for all future usage
             affidx = affidict[d['Affiliation']]
 
             if d['Authorname'] not in authdict.keys():
@@ -685,11 +685,11 @@ if __name__ == "__main__":
         affiliations = []
         authors=[]
         for k,v in authdict.items():
-            author = r'\author[%s]{%s}'%(','.join([str(_v+args.idx) for _v in v]),k)
+            author = r'\author[%s]{%s}' % (','.join(v), k)
             authors.append(author)
 
         for k,v in affidict.items():
-            affiliation = affiltext%(v+args.idx,k)
+            affiliation = affiltext % (v, k)
             affiliations.append(affiliation)
 
         params = dict(defaults,authors='\n'.join(authors).strip(','),affiliations='\n'.join(affiliations))
@@ -723,8 +723,8 @@ if __name__ == "__main__":
             if args.orcid and d['ORCID']:
                 authorkey = authorkey + '\\orcidlink{%s}'%d['ORCID'] 
 
-            if (d['Affiliation'] not in affidict.keys()):
-                affidict[d['Affiliation']] = len(affidict.keys())
+            if d['Affiliation'] not in affidict.keys():
+                affidict[d['Affiliation']] = letter_numeric(len(affidict.keys()) + args.idx) # format as string right away for all future usage
             affidx = affidict[d['Affiliation']]
 
             if authorkey not in authdict.keys():
@@ -736,11 +736,11 @@ if __name__ == "__main__":
         affiliations = []
         authors=[]
         for k,v in authdict.items():
-            author = r'\author[%s]{%s,}' % (','.join([letter_numeric(_v+args.idx) for _v in v]), k)
+            author = r'\author[%s]{%s,}' % (','.join(v), k)
             authors.append(author)
 
         for k,v in affidict.items():
-            affiliation = affiltext % (letter_numeric(v+args.idx), k)
+            affiliation = affiltext % (v, k)
             affiliations.append(affiliation)
 
         params = dict(defaults, authors='\n'.join(authors).strip(','), affiliations=affilsep.join(affiliations))
