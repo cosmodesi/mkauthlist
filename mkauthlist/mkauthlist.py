@@ -646,10 +646,10 @@ if __name__ == "__main__":
             authors.append(author)
 
         if cls == 'aanda':
-            for i, (k, v) in enumerate(affidict.items()):
+            for i, k in enumerate(affidict.keys()):
                 institution = k.rstrip(' ').lstrip(' ')
                 if institution == '':
-                    pass #continue
+                    logging.warning("Blank affiliation in position %d" % (i+1))
                 affiliation = affiltext%(institution)
                 if i == 0:
                     affiliation = affiliation.lstrip('\\and ')
