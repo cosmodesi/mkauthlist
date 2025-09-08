@@ -594,17 +594,17 @@ if __name__ == "__main__":
             document = aastex_document
             authlist = aastex_authlist
             affilmark = r'\altaffilmark{%s},'
-            affiltext = r'\altaffiltext{%i}{%s}'
+            affiltext = r'\altaffiltext{%s}{%s}'
         elif cls == 'emulateapj':
             document = emulateapj_document
             authlist = aastex_authlist
             affilmark = r'\altaffilmark{%s},'
-            affiltext = r'\affil{$^{%i}$ %s}'
+            affiltext = r'\affil{$^{%s}$ %s}'
         elif cls == 'mnras':
             document = mnras_document
             authlist = mnras_authlist
             affilmark = r',$^{%s}$'
-            affiltext = r'$^{%i}$ %s\\'
+            affiltext = r'$^{%s}$ %s\\'
         elif cls == 'aanda':
             document = aanda_document
             authlist = aanda_authlist
