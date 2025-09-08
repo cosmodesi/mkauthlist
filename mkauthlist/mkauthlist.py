@@ -667,11 +667,22 @@ if __name__ == "__main__":
 
 
     ### JCAP ###
-    if cls in ['jcap']:
+    if cls in ['jcap', 'jcap.appendix']:
         document = elsevier_document
-        authlist = elsevier_authlist
         affilmark = r'%i,'
-        affiltext = r'\affiliation[%i]{%s}'
+        if cls == 'jcap':
+            authlist = elsevier_authlist
+            affiltext = r'\affiliation[%i]{%s}'
+            affilsep = '\n'
+        elif cls == 'jcap.appendix':
+            authlist = jcapappendix_authlist
+            affilist = jcapappendix_affilist
+            affiltext = r'\noindent \hangindent=.5cm $^{%i}${%s}'
+            affilsep = '\n\n'
+        else:
+            msg = "Unrecognized latex class: %s"%cls
+            raise Exception(msg)
+        
         for d in data:
             if d['Affiliation'] == '':
                 logging.warning("Blank affiliation for '%s'"%d['Authorname'])
@@ -704,50 +715,7 @@ if __name__ == "__main__":
             affiliation = affiltext%(v+args.idx,k)
             affiliations.append(affiliation)
 
-        params = dict(defaults,authors='\n'.join(authors).strip(','),affiliations='\n'.join(affiliations))
-
-
-    ### JCAP.appendix ###
-    if cls in ['jcap.appendix']:
-        document = elsevier_document
-        authlist = jcapappendix_authlist
-        affilist = jcapappendix_affilist
-        affilmark = r'%i,'
-        affiltext = r'\noindent \hangindent=.5cm $^{%i}${%s}'
-        for d in data:
-            if d['Affiliation'] == '':
-                logging.warning("Blank affiliation for '%s'"%d['Authorname'])
-            if d['Authorname'] == '':
-                logging.warning("Blank authorname for '%s %s'"%(d['Firstname'],
-                                                                d['Lastname']))
-
-            authorkey = '{%s}'%(d['Authorname'])
-
-            if args.orcid and d['ORCID']:
-                authorkey = authorkey + '\\orcidlink{%s}'%d['ORCID'] 
-
-            if (d['Affiliation'] not in affidict.keys()):
-                affidict[d['Affiliation']] = len(affidict.keys())
-            affidx = affidict[d['Affiliation']]
-
-            if authorkey not in authdict.keys():
-                authdict[authorkey] = [affidx]
-            else:
-                authdict[authorkey].append(affidx)
-
-
-        affiliations = []
-        authors=[]
-        for k,v in authdict.items():
-            author = r'\author[%s]{%s,}'%(','.join([str(_v+args.idx) for _v in v]),k)
-            authors.append(author)
-
-        for k,v in affidict.items():
-            affiliation = affiltext%(v+args.idx,k)
-            affiliations.append(affiliation)
-
-
-        params = dict(authors='\n'.join(authors).strip(','), affiliations='\n\n'.join(affiliations))
+        params = dict(defaults, authors='\n'.join(authors).strip(','), affiliations=affilsep.join(affiliations))
 
 
 
