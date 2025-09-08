@@ -20,5 +20,8 @@ example_author_list.*
 *.spl
 *.cls
 
+# XML output
+*.xml
+
 # macOS stuff
 .DS_Store

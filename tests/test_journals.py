@@ -18,7 +18,8 @@ class TestJournal(unittest.TestCase):
             'mnras.cls',
             'aastex.cls',
             'aastex61.cls',
-            'aa.cls'
+            'aa.cls',
+            'author.dtd'
             ]
         self.tex = self.csv.replace('.csv','.tex')
         self.aux = self.csv.replace('.csv','.aux')
@@ -106,6 +107,15 @@ class TestJournal(unittest.TestCase):
         print(cmd)
         subprocess.check_output(cmd, shell=True)
         self.latex(pdf='test_aanda.pdf')
+    
+    def test_author_xml(self):
+        cmd = "mkauthlist -f -j author.xml %(csv)s %(tex)s" % self.files
+        print(cmd)
+        subprocess.check_output(cmd,shell=True)
+        cmd = "xmllint --dtdvalid author.dtd %(tex)s" % self.files
+        print(cmd)
+        subprocess.check_output(cmd,shell=True)
+        shutil.copy(self.tex, 'test_author.xml')
 
 if __name__ == "__main__":
     unittest.main()
