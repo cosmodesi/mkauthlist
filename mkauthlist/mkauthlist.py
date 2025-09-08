@@ -852,7 +852,7 @@ if __name__ == "__main__":
             with open(outfile, 'w', encoding='utf-8') as f:
                 f.writelines(string_list)
 
-        sys.exit(0) # the templates are not set for the next formattijng
+        sys.exit(0) # this is a special case, which does not need the further processing
     
     if args.nocollab: # exclude the collaboration. beware of the following hacks when adding/editing journal templates
         authlist = authlist.replace("[%(collaboration)s]", "") # remove the optional collaboration argument (from the MNRAS template)
