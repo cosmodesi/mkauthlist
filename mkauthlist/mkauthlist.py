@@ -665,7 +665,6 @@ if __name__ == "__main__":
     if cls in ['elsevier']:
         document = elsevier_document
         authlist = elsevier_authlist
-        affilmark = r'%i,'
         affiltext = r'\address[%i]{%s}'
         for d in data:
             if d['Affiliation'] == '':
@@ -699,7 +698,6 @@ if __name__ == "__main__":
     ### JCAP ###
     if cls in ['jcap', 'jcap.appendix']:
         document = elsevier_document
-        affilmark = r'%i,'
         if cls == 'jcap':
             authlist = elsevier_authlist
             affiltext = r'\affiliation[%s]{%s}'
