@@ -19,16 +19,42 @@ import argparse
 
 def parse_name(full_name):
     """
-    Splits a full name into given name and family name.
-    Assumes the last word is the family name.
+    Splits a full name into given and family names, handling LaTeX 
+    non-breaking spaces, multi-word family names (e.g., "de la Soul"),
+    and formatting for initials.
     """
-    parts = full_name.strip().split()
-    if len(parts) > 1:
-        given_name = " ".join(parts[:-1])
-        family_name = parts[-1]
-    else:
-        given_name = ""
-        family_name = full_name
+    # 1. Pre-process the name to handle LaTeX formatting
+    # Replace non-breaking spaces (~) with standard spaces for splitting
+    cleaned_name = full_name.replace('~', ' ')
+    parts = cleaned_name.strip().split()
+
+    if not parts:
+        return "", ""
+    if len(parts) == 1:
+        return "", parts[0]
+
+    # 2. Identify the family name by working backwards from the end
+    family_name_parts = []
+    split_index = len(parts)
+    # Iterate backwards from the last word
+    for i in range(len(parts) - 1, -1, -1):
+        word = parts[i]
+        # The last word is always part of the family name.
+        # Preceding lowercase words (like 'de', 'la', 'von') are also part of it.
+        if i == len(parts) - 1 or word.islower():
+            family_name_parts.insert(0, word)
+            split_index = i
+        else:
+            # We've reached the given names, so stop
+            break
+    
+    # 3. Separate the given name parts from the family name parts
+    given_name_parts = parts[:split_index]
+    family_name = " ".join(family_name_parts)
+    
+    # 4. Format the given name (e.g., combine initials like "A. P." into "A.P.")
+    given_name = "".join(given_name_parts)
+    
     return given_name, family_name
 
 
