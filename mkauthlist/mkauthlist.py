@@ -377,6 +377,46 @@ aanda_document = r"""
 \end{document}
 """
 
+#JCAP
+
+jcap_document = r"""
+\documentclass[a4paper,11pt]{article}
+\usepackage{jcappub}
+
+\title{%(title)s}
+
+%(authlist)s
+
+\abstract{%(abstract)s}
+
+\begin{document}
+\maketitle
+\flushbottom
+
+\end{document}
+"""
+
+jcap_appendix_document = r"""
+\documentclass[a4paper,11pt]{article}
+\usepackage{jcappub}
+
+\title{%(title)s}
+
+%(authlist)s
+
+\abstract{%(abstract)s}
+
+\begin{document}
+\maketitle
+\flushbottom
+
+\appendix
+
+%(affilist)s
+
+\end{document}
+"""
+
 
 if __name__ == "__main__":
     import argparse
@@ -697,12 +737,13 @@ if __name__ == "__main__":
 
     ### JCAP ###
     if cls in ['jcap', 'jcap.appendix']:
-        document = elsevier_document
         if cls == 'jcap':
+            document = jcap_document
             authlist = elsevier_authlist
             affiltext = r'\affiliation[%s]{%s}'
             affilsep = '\n'
         elif cls == 'jcap.appendix':
+            document = jcap_appendix_document
             authlist = jcapappendix_authlist
             affilist = jcapappendix_affilist
             affiltext = r'\noindent \hangindent=.5cm $^{%s}${%s}'
@@ -860,30 +901,35 @@ if __name__ == "__main__":
 
     output  = "%% Author list file generated with: %s %s \n"%(parser.prog, __version__ )
     output += "%% %s %s \n"%(os.path.basename(sys.argv[0]),' '.join(sys.argv[1:]))
-    if cls not in ['arxiv']: # non-TeX "journal(s)" for which the following lines are not relevant
+    if cls not in ['arxiv']: # non-TeX "journal(s)" for which the following lines are not relevant; author.xml case does not get to this point exiting above
         if args.orcid: output += "%% Orcid numbers may need \\usepackage{orcidlink}.\n"
-        output += "%% Use \\input{%s} to call the file\n"%(args.outfile if args.outfile is not None else '...')
+        if not args.doc: output += "%% Use \\input{%s} to call the file\n"%(args.outfile if args.outfile is not None else '...')
     output += "\n"
 
-    if cls in ['jcap.appendix']: 
-        if args.sort_firsttier: output += "\\emailAdd{firstauthor@email}\n\\affiliation{Affiliations are in Appendix \\ref{sec:affiliations}}\n"
-        else: output += "\\author{{DESI Collaboration}:}\n\\emailAdd{spokespersons@desi.lbl.gov}\n\\affiliation{Affiliations are in Appendix \\ref{sec:affiliations}}\n"
+    if cls in ['jcap.appendix']:
+        if args.sort_firsttier: authlist = "\\emailAdd{firstauthor@email}\n" + authlist
+        else: authlist = "\\author{{DESI Collaboration}:}\n\\emailAdd{spokespersons@desi.lbl.gov}\n" + authlist
+        authlist = "\\affiliation{Affiliations are in Appendix \\ref{sec:affiliations}}\n" + authlist
+        affilist = "\\section{Author Affiliations}\n\\label{sec:affiliations}\n\n" + affilist
 
 
     if args.doc:
         params['authlist'] = authlist%params
+        if cls in ['jcap.appendix']: params['affilist'] = affilist % params
         output += document%params
     else:
         output += authlist%params
         if cls in ['jcap.appendix']: 
             output2  = "%% Author list file generated with: %s %s \n"%(parser.prog, __version__ )
             output2 += "%% Affiliations file. Use \\input to call it after \\appendix\n\n\n"
-            output2 += "\\section{Author Affiliations}\n\\label{sec:affiliations}\n\n"
-            output2 += affilist%params
+            output2 += affilist % params
 
 
     if args.outfile is None:
         print(output)
+        if cls in ['jcap.appendix'] and not args.doc:
+            print()
+            print(output2)
     else:
         outfile = args.outfile
         if os.path.exists(outfile) and not args.force:
@@ -891,10 +937,8 @@ if __name__ == "__main__":
         out = open(outfile,'w')
         out.write(output)
         out.close()
-        if cls in ['jcap.appendix']: 
-#            import os
-#            outfile2 = os.path.splitext(outfile)+".affiliations.tex"
-            outfile2 = outfile[:-len(".tex")] + ".affiliations.tex"
+        if cls in ['jcap.appendix'] and not args.doc:
+            outfile2 = outfile.removesuffix(".tex") + ".affiliations.tex"
             out2 = open(outfile2,'w')
             out2.write(output2)
             out2.close()
