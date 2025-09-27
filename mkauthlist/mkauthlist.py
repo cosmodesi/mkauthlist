@@ -69,8 +69,12 @@ def check_umlaut(lines):
     return lines
 
 def clean_latex_to_text(s):
-    "Removal of LaTeX commands suitable for arXiv. Leaves accent commands"
-    return re.sub(r'(?<!\\)~',' ', s).replace(r'\ ', ' ').replace('{', '').replace('}', '')
+    """
+    Removal of LaTeX commands suitable for arXiv and INSPIRE author.xml.
+    First converts accent commands to Unicode (probably safer this way: there are different accent patterns that seem hard to support).
+    Then replaces unusual/exotic spaces (e.g., unbreakable spaces resulting from ~ in LaTeX) and/or multiple adjacent spaces by a single simple space.
+    """
+    return re.sub(r"\s+", " ", LatexNodes2Text().latex_to_text(s))
 
 def letter_numeric(N: int):
     """
@@ -813,7 +817,7 @@ if __name__ == "__main__":
 
         authors=[]
         for k,v in authdict.items():
-            authors.append(clean_latex_to_text(k))
+            authors.append(clean_latex_to_text(k)) # convert LaTeX to (Unicode) plain text
 
         params = dict(defaults,authors=', '.join(authors).strip(','),affiliations='')
     
@@ -823,11 +827,8 @@ if __name__ == "__main__":
     if cls in ['author.xml']:
         authors_data = {}
         affidict = {}
-        converter = LatexNodes2Text()
         for dat_auth in data:
-            authorkey = converter.latex_to_text(clean_latex_to_text(dat_auth['Authorname']))
-            # converter.latex_to_text converts the LaTeX accented characters (probably unwanted in XML) to Unicode
-            # clean_latex_to_text should safely remove "~" designating non-breakable spaces, which we probably do not want in XML
+            authorkey = clean_latex_to_text(dat_auth['Authorname']) # convert LaTeX to (Unicode) plain text
             if authorkey not in authors_data.keys(): authors_data[authorkey] = {'affiliations': []}
             if args.orcid and dat_auth['ORCID']: authors_data[authorkey]['orcid'] = dat_auth['ORCID']
             if dat_auth['Affiliation'] == '':
@@ -836,9 +837,7 @@ if __name__ == "__main__":
                 logging.warning("Blank authorname for '%s %s'"%(dat_auth['Firstname'],
                                                                 dat_auth['Lastname']))
             authors_data[authorkey]['familyName'] = dat_auth['Lastname'] # hopefully this is not simplifying too much
-            affikey = converter.latex_to_text(clean_latex_to_text(dat_auth['Affiliation']))
-            # converter.latex_to_text converts the LaTeX accented characters (probably unwanted in XML) to Unicode
-            # clean_latex_to_text should safely remove "~" designating non-breakable spaces, which we probably do not want in XML
+            affikey = clean_latex_to_text(dat_auth['Affiliation']) # convert LaTeX to (Unicode) plain text
             if affikey not in affidict.keys(): affidict[affikey] = "a%d" % (len(affidict.keys()) + args.idx) # IDs are assigned as a%d right away, by default starting from a1
             affidx = affidict[affikey]
             authors_data[authorkey]['affiliations'].append(affidx)
