@@ -452,6 +452,8 @@ if __name__ == "__main__":
                         help="journal name or latex document class.")
     parser.add_argument('-nc','--nocollab','--nocollaboration', action='store_true',
                         help="exclude the collaboration name (may be desirable in first-tier papers).")
+    parser.add_argument('--numeric-affil','--numeric-affiliations', action='store_true',
+                        help="use numbers and not letters to index affiliations for JCAP.")
     parser.add_argument('--orcid', action='store_true',
                         help="include ORCID information (elsevier, revtex, aastex, mnras, emulateapj, aanda, inspire or author.xml).")
     parser.add_argument('-pr', '--pubref', metavar='https://arxiv.org/abs/YYMM.XXXXX',
@@ -769,7 +771,7 @@ if __name__ == "__main__":
                 authorkey = authorkey + '\\orcidlink{%s}'%d['ORCID'] 
 
             if d['Affiliation'] not in affidict.keys():
-                affidict[d['Affiliation']] = letter_numeric(len(affidict.keys()) + args.idx) # format as string right away for all future usage
+                affidict[d['Affiliation']] = (str if args.numeric_affil else letter_numeric)(len(affidict.keys()) + args.idx) # format as string right away for all future usage
             affidx = affidict[d['Affiliation']]
 
             if authorkey not in authdict.keys():

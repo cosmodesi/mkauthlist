@@ -70,6 +70,9 @@ mkauthlist -f --sort-firsttier --orcid -j jcap.appendix example_firsttier.csv ex
 ```
 respectively.
 
+If you really don't like the letter-based affiliation indexing for your JCAP manuscript version, you can revert to number affiliation indices by adding a `--numeric-affil` (or `--numeric-affiliations`) flag.
+However, to the best of our knowledge, the JCAP editorial team enforces the letter-based affiliation indexing in proofs and the published version, and it may be easier to prevent errors and/or validate the conversion if you start with the same format (or at least produce a separate version for that).
+
 To generate the author list for arXiv, use `-j arxiv` with the same sorting options, i.e.
 ```shell
 mkauthlist -f --sort -j arxiv example_alphabetical.csv example_alphabetical.txt
