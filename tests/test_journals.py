@@ -18,6 +18,7 @@ class TestJournal(unittest.TestCase):
             'mnras.cls',
             'aastex.cls',
             'aastex61.cls',
+            'aastex7.cls',
             'aa.cls',
             'jcappub.sty',
             'author.dtd'
@@ -87,6 +88,12 @@ class TestJournal(unittest.TestCase):
         print(cmd)
         subprocess.check_output(cmd,shell=True)
         self.latex(pdf='test_aastex61.pdf')
+
+    def test_aastex7(self):
+        cmd = "mkauthlist -f --doc -j aastex7 %(csv)s %(tex)s"%self.files
+        print(cmd)
+        subprocess.check_output(cmd,shell=True)
+        self.latex(pdf='test_aastex7.pdf')
 
     def test_revtex(self):
         cmd = "mkauthlist -f --doc -j revtex %(csv)s %(tex)s"%self.files
