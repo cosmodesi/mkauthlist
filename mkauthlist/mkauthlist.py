@@ -282,7 +282,7 @@ aastex7_document = r"""
 \begin{abstract}
 %(abstract)s
 \end{abstract}
-\maketitle
+%%\maketitle %% uncommented \maketitle causes an error with \allauthors; the AASTeX 7 example does not include \maketitle at all
 \newpage
 \allauthors
 \end{document}
