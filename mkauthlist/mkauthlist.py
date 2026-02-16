@@ -520,7 +520,7 @@ if __name__ == "__main__":
     dialect = csv.Sniffer().sniff(''.join(lines), delimiters=',;')
 
     rows = []
-    for arow in csv.reader(lines, skipinitialspace=True, dialect=dialect):
+    for arow in csv.reader(lines, skipinitialspace=True, delimiter=dialect.delimiter, quotechar=dialect.quotechar):
         if len(arow)!=0 and not arow[0].startswith('#'):
             rows.append(arow)
 
