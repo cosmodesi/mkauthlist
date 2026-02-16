@@ -515,8 +515,12 @@ if __name__ == "__main__":
     readlines = open(args.infile).readlines()
     # Check for unescaped umlauts
     lines = check_umlaut(readlines)
+
+    # Detect delimiter: prefer comma but try semicolon if comma doesn't work
+    dialect = csv.Sniffer().sniff(''.join(lines), delimiters=',;')
+
     rows = []
-    for arow in csv.reader(lines, skipinitialspace=True):
+    for arow in csv.reader(lines, skipinitialspace=True, dialect=dialect):
         if len(arow)!=0 and not arow[0].startswith('#'):
             rows.append(arow)
 
