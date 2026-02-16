@@ -648,7 +648,7 @@ if __name__ == "__main__":
             authorkey = '{%s}'%(d['Authorname'])
 
             if args.orcid and d['ORCID']:
-                authorkey = '[%s]'%d['ORCID'] + authorkey
+                authorkey = '{%s\orcidlink{%s}}'%(d['Authorname'], d['ORCID'])
 
             if authorkey not in authdict.keys():
                 authdict[authorkey] = [d['Affiliation']]
