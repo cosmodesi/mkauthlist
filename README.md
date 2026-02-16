@@ -88,23 +88,12 @@ To generate the `author.xml` for INSPIRE (<https://github.com/inspirehep/author.
 ```shell
 mkauthlist -f --sort -j author.xml --orcid -pr https://arxiv.org/abs/YYMM.XXXXX example_alphabetical.csv example_alphabetical.xml
 ```
-> mkauthlist --sort example_author_list.csv example_author_list.tex
-```
-Additionally, it is possible to alphabetically sort only the authors identified as "builders" (`JoinedAsBuilder ==  'True'`) using the `-sb, --sort-builder` flag (for DES author lists this is usually already done in the generation of the CSV file). 
-```
-> mkauthlist --sort-builder example_author_list.csv example_author_list.tex
-```
-It is often necessary to place a few key authors at the front of the author list. This can be done using an auxiliary author order file (i.e., `--aux order.csv`). Here, `order.csv` is a one-per-line list of author last names (and optionally, first names). Authors with names in `order.csv` will be moved to the front of the author list and placed in the order specified in `order.csv`.
-```
-> mkauthlist --aux order.csv example_author_list.csv example_author_list.tex
-```
-It is possible to combine options in order to place several authors first and order the rest of the list alphabetically
+It is worth including the ORCID information by using the `--orcid` option.
+**NB**: Excluding the collaboration name will produce an invalid XML file.
 
-### Adding ORCID
-
-If the input CSV file provides ORCIDs for authors, they can be added to the output latex formatted author list with the `--orcid` option:
-```
-> mkauthlist --orcid example_author_list.csv example_author_list.tex
+Another option is to use the `mkauthorxml.py` script to create the author.xml file that APS journals may request. Here is the syntax:
+```shell
+python mkauthorxml.py paper.tex -o paper.xml 
 ```
 Note there are also options for adding the collaboration name and an arxiv link. Use `-h` to get information about other command line parameters. 
 
