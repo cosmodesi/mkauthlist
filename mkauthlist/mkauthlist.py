@@ -648,7 +648,10 @@ if __name__ == "__main__":
             authorkey = '{%s}'%(d['Authorname'])
 
             if args.orcid and d['ORCID']:
-                authorkey = '{%s\orcidlink{%s}}'%(d['Authorname'], d['ORCID'])
+                if cls in ['revtex']:
+                    authorkey = '{%s\orcidlink{%s}}'%(d['Authorname'], d['ORCID']) # RevTeX 4.0, 4.1 and 4.2 do not seem to support the ORCID via the optional argument for \author, so use \orcidlink instead
+                elif cls in ['aastex6']:
+                    authorkey = '[%s]'%d['ORCID'] + authorkey # AASTeX 6.1+ author guides recommend specifying the ORCID via the optional argument for \author. Apparently, AASTeX 6.0 does not support it
 
             if authorkey not in authdict.keys():
                 authdict[authorkey] = [d['Affiliation']]
