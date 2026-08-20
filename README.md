@@ -39,7 +39,7 @@ If you do not worry about conflicts with the DES version, you can install the co
 ### Installation at NERSC
 
 `mkauthlist` is a light script which can be installed and run on your local machine as long as you have a Python (3) setup; the most substantial dependence is `numpy`.
-However, you may find it easier to install at NERSC, e.g. if you have Windows (without WSL).
+However, you may find it easier to install or use at NERSC, e.g. if you have Windows (without WSL) locally.
 
 Installation at NERSC should work smoothly as long as you load any of the more elaborate Python environments: NERSC Python:
 ```shell
