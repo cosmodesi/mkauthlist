@@ -26,7 +26,7 @@ Then you can simply install it by
 python3 -m pip install .
 ```
 If the code is changed/updated, you will need to reinstall for the changes to take effect.
-The editable/developer installation (`pip install -e .`) does not seem to help avoid the re-installation in some cases.
+The editable/developer installation (`pip install -e .`) does not seem to help avoid the re-installation in most cases.
 
 You can also install from GitHub without cloning or downloading the repository:
 
@@ -35,6 +35,29 @@ python3 -m pip install git+https://github.com/cosmodesi/mkauthlist.git
 ```
 
 If you do not worry about conflicts with the DES version, you can install the code with one of the commands above without setting up a virtual environment.
+
+### Installation at NERSC
+
+`mkauthlist` is a light script which can be installed and run on your local machine as long as you have a Python (3) setup; the most substantial dependence is `numpy`.
+However, you may find it easier to install at NERSC, e.g. if you have Windows (without WSL).
+
+Installation at NERSC should work smoothly as long as you load any of the more elaborate Python environments: NERSC Python:
+```shell
+module load python
+```
+or the DESI environment:
+```shell
+source /global/common/software/desi/desi_environment.sh
+```
+or the cosmodesi environment:
+```shell
+source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
+```
+
+After any of the three above, the installation from GitHub seems to work:
+```shell
+python3 -m pip install git+https://github.com/cosmodesi/mkauthlist.git
+```
 
 Usage
 -----
