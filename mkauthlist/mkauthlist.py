@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 """A simple script for making latex author lists from the csv file
-produced by the DES Publication Database (PubDB).
+produced by the DESI Publication Database (PubDB, originally for DES).
 
 Some usage notes:
 (1) By default, the script preserves the order of the input file. The
 '--sort' option does not respect tiers (use '--sort-builder' instead).
 (2) An exact match is required to group affiliations. This should not
-be a problem for affiliations provided by the DES PubDB; however, be
+be a problem for affiliations provided by the DESI (or DES) PubDB; however, be
 careful if you are editing affiliations by hand.
 (3) The script parses quoted CSV format. LaTeX umlauts cause problems
 (i.e., '\"') and must be escaped in the CSV file. The PubDB should do
