@@ -25,3 +25,6 @@ example_author_list.*
 
 # macOS stuff
 .DS_Store
+
+# VS Code stuff
+.vscode
